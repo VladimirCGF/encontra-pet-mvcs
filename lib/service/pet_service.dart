@@ -37,4 +37,31 @@ class PetService {
     
     return localPet;
   }
+  Future<PetModel> updatePet(PetModel pet) async {
+    // 1. Marca como pendente de atualização
+    final map = pet.toMap();
+    map['sync_status'] = 'pending_update';
+    final updatedPet = PetModel.fromMap(map);
+
+    // 2. Salva localmente
+    await _petDao.updatePet(updatedPet);
+
+    // 3. Dispara a sincronização
+    _syncService.syncPets();
+    
+    return updatedPet;
+  }
+
+  Future<void> deletePet(String id) async {
+    // Para deleção offline, buscamos o pet, marcamos como pending_delete e atualizamos localmente
+    // O SyncService fará o trabalho de deletar fisicamente do SQLite após remover da nuvem
+    final pets = await _petDao.getPets();
+    final pet = pets.firstWhere((p) => p.id == id);
+    
+    final map = pet.toMap();
+    map['sync_status'] = 'pending_delete';
+    await _petDao.updatePet(PetModel.fromMap(map));
+    
+    _syncService.syncPets();
+  }
 }

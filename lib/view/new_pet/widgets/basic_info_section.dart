@@ -2,41 +2,28 @@ import 'package:flutter/material.dart';
 import 'package:encontrapet/view/theme/app_colors.dart';
 import 'package:google_fonts/google_fonts.dart';
 
-class BasicInfoSection extends StatefulWidget {
-  final String? initialName;
-  final String? initialType;
-  final String? initialBreed;
-  final String? initialColor;
-  final String? initialAge;
+class BasicInfoSection extends StatelessWidget {
+  final TextEditingController nameController;
+  final TextEditingController breedController;
+  final TextEditingController colorController;
+  final TextEditingController ageController;
+  final String selectedType;
+  final ValueChanged<String> onTypeChanged;
 
   const BasicInfoSection({
     super.key,
-    this.initialName,
-    this.initialType,
-    this.initialBreed,
-    this.initialColor,
-    this.initialAge,
+    required this.nameController,
+    required this.breedController,
+    required this.colorController,
+    required this.ageController,
+    required this.selectedType,
+    required this.onTypeChanged,
   });
 
   @override
-  State<BasicInfoSection> createState() => _BasicInfoSectionState();
-}
-
-class _BasicInfoSectionState extends State<BasicInfoSection> {
-  int _selectedType = 0;
-  final List<String> _types = ['Cachorro', 'Gato', 'Outro'];
-
-  @override
-  void initState() {
-    super.initState();
-    if (widget.initialType != null) {
-      _selectedType = _types.indexOf(widget.initialType!);
-      if (_selectedType < 0) _selectedType = 0;
-    }
-  }
-
-  @override
   Widget build(BuildContext context) {
+    final List<String> types = ['Cachorro', 'Gato', 'Outro'];
+
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
@@ -75,7 +62,7 @@ class _BasicInfoSectionState extends State<BasicInfoSection> {
           const SizedBox(height: 6),
           _buildTextField(
             placeholder: 'Ex: Thor',
-            initialValue: widget.initialName,
+            controller: nameController,
           ),
           const SizedBox(height: 16),
 
@@ -83,12 +70,12 @@ class _BasicInfoSectionState extends State<BasicInfoSection> {
           _buildLabel('Tipo'),
           const SizedBox(height: 8),
           Row(
-            children: List.generate(_types.length, (index) {
-              final isSelected = _selectedType == index;
+            children: types.map((type) {
+              final isSelected = selectedType == type;
               return Padding(
                 padding: const EdgeInsets.only(right: 10),
                 child: GestureDetector(
-                  onTap: () => setState(() => _selectedType = index),
+                  onTap: () => onTypeChanged(type),
                   child: AnimatedContainer(
                     duration: const Duration(milliseconds: 200),
                     padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
@@ -101,7 +88,7 @@ class _BasicInfoSectionState extends State<BasicInfoSection> {
                       ),
                     ),
                     child: Text(
-                      _types[index],
+                      type,
                       style: GoogleFonts.roboto(
                         fontSize: 14,
                         fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
@@ -111,7 +98,7 @@ class _BasicInfoSectionState extends State<BasicInfoSection> {
                   ),
                 ),
               );
-            }),
+            }).toList(),
           ),
           const SizedBox(height: 16),
 
@@ -124,7 +111,10 @@ class _BasicInfoSectionState extends State<BasicInfoSection> {
                   children: [
                     _buildLabel('Raça'),
                     const SizedBox(height: 6),
-                    _buildTextField(placeholder: 'SRD', initialValue: widget.initialBreed),
+                    _buildTextField(
+                      placeholder: 'SRD',
+                      controller: breedController,
+                    ),
                   ],
                 ),
               ),
@@ -135,7 +125,10 @@ class _BasicInfoSectionState extends State<BasicInfoSection> {
                   children: [
                     _buildLabel('Cor'),
                     const SizedBox(height: 6),
-                    _buildTextField(placeholder: 'Caramelo', initialValue: widget.initialColor),
+                    _buildTextField(
+                      placeholder: 'Caramelo',
+                      controller: colorController,
+                    ),
                   ],
                 ),
               ),
@@ -146,7 +139,10 @@ class _BasicInfoSectionState extends State<BasicInfoSection> {
           // Idade
           _buildLabel('Idade aproximada'),
           const SizedBox(height: 6),
-          _buildTextField(placeholder: '3 anos', initialValue: widget.initialAge),
+          _buildTextField(
+            placeholder: '3 anos',
+            controller: ageController,
+          ),
         ],
       ),
     );
@@ -163,9 +159,9 @@ class _BasicInfoSectionState extends State<BasicInfoSection> {
     );
   }
 
-  Widget _buildTextField({required String placeholder, String? initialValue}) {
+  Widget _buildTextField({required String placeholder, required TextEditingController controller}) {
     return TextFormField(
-      initialValue: initialValue,
+      controller: controller,
       style: GoogleFonts.roboto(fontSize: 14, color: AppColors.textPrimary),
       decoration: InputDecoration(
         hintText: placeholder,

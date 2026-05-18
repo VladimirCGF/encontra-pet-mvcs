@@ -1,9 +1,17 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:encontrapet/view/theme/app_colors.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 class PhotosSection extends StatelessWidget {
-  const PhotosSection({super.key});
+  final String? imagePath;
+  final VoidCallback onPickImage;
+
+  const PhotosSection({
+    super.key,
+    this.imagePath,
+    required this.onPickImage,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -40,7 +48,7 @@ class PhotosSection extends StatelessWidget {
           ),
           const SizedBox(height: 4),
           Text(
-            'Adicione até 3 fotos. A primeira será a capa.',
+            'Adicione uma foto de capa para o pet.',
             style: GoogleFonts.roboto(
               fontSize: 13,
               color: AppColors.textSecondary,
@@ -48,50 +56,48 @@ class PhotosSection extends StatelessWidget {
           ),
           const SizedBox(height: 16),
 
-          // Photo placeholders
-          Row(
-            children: List.generate(3, (index) {
-              return Expanded(
-                child: Padding(
-                  padding: EdgeInsets.only(right: index < 2 ? 10 : 0),
-                  child: GestureDetector(
-                    onTap: () {},
-                    child: Container(
-                      height: 100,
-                      decoration: BoxDecoration(
-                        color: AppColors.background,
-                        borderRadius: BorderRadius.circular(12),
-                        border: Border.all(
-                          color: Colors.grey[300]!,
-                          width: 1.5,
-                          // Note: dashed border is achieved through color + style
-                        ),
-                      ),
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Icon(
-                            Icons.add,
-                            size: 28,
-                            color: Colors.grey[400],
-                          ),
-                          if (index == 0) ...[
-                            const SizedBox(height: 4),
-                            Text(
-                              'Capa',
-                              style: GoogleFonts.roboto(
-                                fontSize: 11,
-                                color: Colors.grey[400],
-                              ),
-                            ),
-                          ],
-                        ],
-                      ),
-                    ),
-                  ),
+          // Photo picker placeholder / Selected Image
+          GestureDetector(
+            onTap: onPickImage,
+            child: Container(
+              height: 160,
+              width: double.infinity,
+              decoration: BoxDecoration(
+                color: AppColors.background,
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(
+                  color: Colors.grey[300]!,
+                  width: 1.5,
                 ),
-              );
-            }),
+                image: imagePath != null
+                    ? DecorationImage(
+                        image: FileImage(File(imagePath!)),
+                        fit: BoxFit.cover,
+                      )
+                    : null,
+              ),
+              child: imagePath == null
+                  ? Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(
+                          Icons.add_a_photo_outlined,
+                          size: 36,
+                          color: Colors.grey[400],
+                        ),
+                        const SizedBox(height: 8),
+                        Text(
+                          'Adicionar Capa',
+                          style: GoogleFonts.roboto(
+                            fontSize: 14,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.grey[500],
+                          ),
+                        ),
+                      ],
+                    )
+                  : null, // Se tem imagem, o child fica vazio (apenas exibimos a DecorationImage)
+            ),
           ),
         ],
       ),

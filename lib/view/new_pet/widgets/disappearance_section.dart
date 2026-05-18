@@ -3,13 +3,13 @@ import 'package:encontrapet/view/theme/app_colors.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 class DisappearanceSection extends StatelessWidget {
-  final String? initialDate;
-  final String? initialDescription;
+  final TextEditingController dateController;
+  final TextEditingController descriptionController;
 
   const DisappearanceSection({
     super.key,
-    this.initialDate,
-    this.initialDescription,
+    required this.dateController,
+    required this.descriptionController,
   });
 
   @override
@@ -51,10 +51,38 @@ class DisappearanceSection extends StatelessWidget {
           _buildLabel('Data'),
           const SizedBox(height: 6),
           TextFormField(
-            initialValue: initialDate,
+            controller: dateController,
+            readOnly: true,
+            onTap: () async {
+              final DateTime? pickedDate = await showDatePicker(
+                context: context,
+                initialDate: DateTime.now(),
+                firstDate: DateTime(2000),
+                lastDate: DateTime.now(),
+                builder: (context, child) {
+                  return Theme(
+                    data: Theme.of(context).copyWith(
+                      colorScheme: const ColorScheme.light(
+                        primary: Color(0xFF00B4FF), 
+                        onPrimary: Colors.white,
+                        onSurface: Colors.black, 
+                      ),
+                    ),
+                    child: child!,
+                  );
+                },
+              );
+
+              if (pickedDate != null) {
+                final day = pickedDate.day.toString().padLeft(2, '0');
+                final month = pickedDate.month.toString().padLeft(2, '0');
+                final year = pickedDate.year.toString();
+                dateController.text = '$day/$month/$year';
+              }
+            },
             style: GoogleFonts.roboto(fontSize: 14, color: AppColors.textPrimary),
             decoration: InputDecoration(
-              hintText: 'mm/dd/yyyy',
+              hintText: 'dd/mm/aaaa',
               hintStyle: GoogleFonts.roboto(color: Colors.grey[400], fontSize: 14),
               filled: true,
               fillColor: AppColors.background,
@@ -76,7 +104,7 @@ class DisappearanceSection extends StatelessWidget {
           _buildLabel('Descrição'),
           const SizedBox(height: 6),
           TextFormField(
-            initialValue: initialDescription,
+            controller: descriptionController,
             maxLines: 4,
             style: GoogleFonts.roboto(fontSize: 14, color: AppColors.textPrimary),
             decoration: InputDecoration(

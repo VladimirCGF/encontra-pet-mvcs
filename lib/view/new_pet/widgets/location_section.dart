@@ -3,11 +3,11 @@ import 'package:encontrapet/view/theme/app_colors.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 class LocationSection extends StatelessWidget {
-  final String? initialLocation;
+  final TextEditingController locationController;
 
   const LocationSection({
     super.key,
-    this.initialLocation,
+    required this.locationController,
   });
 
   @override
@@ -41,10 +41,10 @@ class LocationSection extends StatelessWidget {
 
           // Location text field
           TextFormField(
-            initialValue: initialLocation,
+            controller: locationController,
             style: GoogleFonts.roboto(fontSize: 14, color: AppColors.textPrimary),
             decoration: InputDecoration(
-              hintText: 'Rua, bairro',
+              hintText: 'Rua, bairro, cidade',
               hintStyle: GoogleFonts.roboto(color: Colors.grey[400], fontSize: 14),
               filled: true,
               fillColor: AppColors.background,
@@ -71,7 +71,9 @@ class LocationSection extends StatelessWidget {
             width: double.infinity,
             height: 48,
             child: OutlinedButton.icon(
-              onPressed: () {},
+              onPressed: () {
+                // Futuramente pode integrar o pacote geolocator aqui
+              },
               icon: const Icon(Icons.near_me_outlined, color: Color(0xFF00B4FF), size: 18),
               label: Text(
                 'Usar localização atual',

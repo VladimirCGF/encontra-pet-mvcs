@@ -10,7 +10,7 @@ class PetController extends ChangeNotifier {
 
   // Filtragem básica, no futuro você pode filtrar pelo ID do usuário logado
   List<PetModel> get feedPets => _allPets;
-  List<PetModel> get myPets => _allPets.where((pet) => pet.isLost == false).toList(); // Apenas exemplo
+  List<PetModel> get myPets => _allPets; // MVP: Exibe todos os pets gerados localmente pelo usuário
   bool get isLoading => _isLoading;
 
   Future<void> fetchAllPets() async {
@@ -40,6 +40,29 @@ class PetController extends ChangeNotifier {
     } finally {
       _isLoading = false;
       notifyListeners();
+    }
+  }
+
+  Future<void> editPet(PetModel pet) async {
+    try {
+      final updatedPet = await _petService.updatePet(pet);
+      final index = _allPets.indexWhere((p) => p.id == updatedPet.id);
+      if (index != -1) {
+        _allPets[index] = updatedPet;
+        notifyListeners(); // Atualiza a tela com o pet modificado imediatamente
+      }
+    } catch (e) {
+      debugPrint('Erro ao editar: $e');
+    }
+  }
+
+  Future<void> removePet(String id) async {
+    try {
+      await _petService.deletePet(id);
+      _allPets.removeWhere((p) => p.id == id);
+      notifyListeners(); // Remove o pet da tela instantaneamente
+    } catch (e) {
+      debugPrint('Erro ao deletar: $e');
     }
   }
 }

@@ -1,3 +1,4 @@
+import 'package:encontrapet/view/profile/widgets/user_avatar.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:encontrapet/controller/auth_controller.dart';
@@ -45,32 +46,7 @@ class ProfileHeader extends StatelessWidget {
             child: Column(
               children: [
                 // Avatar
-                Container(
-                  width: 96,
-                  height: 96,
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    color: Colors.grey[300],
-                    border: Border.all(
-                      color: Colors.white,
-                      width: 2.0,
-                    ),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withValues(alpha: 0.05),
-                        blurRadius: 8,
-                        offset: const Offset(0, 4),
-                      ),
-                    ],
-                  ),
-                  child: Center(
-                    child: Icon(
-                      Icons.person,
-                      size: 64,
-                      color: Colors.grey[600],
-                    ),
-                  ),
-                ),
+                const UserAvatar(size: 96,),
                 const SizedBox(height: 16),
 
                 // Name + Offline Sync Status Indicator

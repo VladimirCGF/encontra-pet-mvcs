@@ -1,3 +1,4 @@
+import 'package:encontrapet/view/profile/widgets/user_avatar.dart';
 import 'package:flutter/material.dart';
 import 'package:encontrapet/view/theme/app_colors.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -28,32 +29,7 @@ class HomeHeader extends StatelessWidget {
             Row(
               children: [
                 // Avatar
-                Container(
-                  width: 48,
-                  height: 48,
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    color: Colors.grey[300], // Cor de fundo do círculo cinza claro
-                    border: Border.all(
-                      color: Colors.white,
-                      width: 2.0,
-                    ),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withValues(alpha: 0.05),
-                        blurRadius: 8,
-                        offset: const Offset(0, 4),
-                      ),
-                    ],
-                  ),
-                  child: Center(
-                    child: Icon(
-                      Icons.person,            // Ícone da silhueta cinza escura
-                      size: 32,                // Proporcional ao tamanho de 48 do Container
-                      color: Colors.grey[600], // Cor da silhueta
-                    ),
-                  ),
-                ),
+               const UserAvatar(),
                 const SizedBox(width: 12),
                 // Greeting Column
                 Column(

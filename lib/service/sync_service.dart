@@ -1,3 +1,5 @@
+import 'dart:io';
+import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
 import '../database/pet_dao.dart';
 import '../api/pet_api.dart';
@@ -50,17 +52,65 @@ class SyncService {
       final pendingPets = await _petDao.getPendingPets();
       for (var pet in pendingPets) {
         if (pet.syncStatus == 'pending_insert') {
-          // Prepara o objeto para a nuvem mudando o status para synced
           final map = pet.toMap();
-          map['sync_status'] = 'synced';
-          final petToUpload = PetModel.fromMap(map);
 
           try {
+            // Upload da foto para o Storage se for um caminho local
+            if (map['imageUrl'] != null && !map['imageUrl'].toString().startsWith('http')) {
+              final file = File(map['imageUrl']);
+              if (await file.exists()) {
+                final fileExt = file.path.split('.').last;
+                final fileName = '${pet.id}_${DateTime.now().millisecondsSinceEpoch}.$fileExt';
+                
+                await Supabase.instance.client.storage
+                    .from('pet-images')
+                    .upload(fileName, file);
+                
+                final publicUrl = Supabase.instance.client.storage
+                    .from('pet-images')
+                    .getPublicUrl(fileName);
+                
+                map['imageUrl'] = publicUrl;
+              }
+            }
+
+            // Prepara o objeto para a nuvem mudando o status para synced
+            map['sync_status'] = 'synced';
+            final petToUpload = PetModel.fromMap(map);
+
             await _petApi.insertPet(petToUpload);
-            // Se o upload funcionou, atualiza o SQLite local informando que não está mais pendente
+            // Se o upload funcionou, atualiza o SQLite local
             await _petDao.updatePet(petToUpload);
           } catch (e) {
-            debugPrint('Erro no upload para a API: $e');
+            debugPrint('Erro no upload do Pet para a API: $e');
+          }
+        } else if (pet.syncStatus == 'pending_update') {
+          final map = pet.toMap();
+          try {
+            // Se tiver uma nova foto local (edição com nova foto), faz o upload
+            if (map['imageUrl'] != null && !map['imageUrl'].toString().startsWith('http')) {
+              final file = File(map['imageUrl']);
+              if (await file.exists()) {
+                final fileExt = file.path.split('.').last;
+                final fileName = '${pet.id}_${DateTime.now().millisecondsSinceEpoch}.$fileExt';
+                await Supabase.instance.client.storage.from('pet-images').upload(fileName, file);
+                map['imageUrl'] = Supabase.instance.client.storage.from('pet-images').getPublicUrl(fileName);
+              }
+            }
+
+            map['sync_status'] = 'synced';
+            final petToUpload = PetModel.fromMap(map);
+            await _petApi.updatePet(petToUpload);
+            await _petDao.updatePet(petToUpload);
+          } catch (e) {
+            debugPrint('Erro no update do Pet para a API: $e');
+          }
+        } else if (pet.syncStatus == 'pending_delete') {
+          try {
+            await _petApi.deletePet(pet.id!);
+            await _petDao.deletePet(pet.id!); // Remove fisicamente do SQLite
+          } catch (e) {
+            debugPrint('Erro no delete do Pet para a API: $e');
           }
         }
       }
