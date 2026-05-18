@@ -1,4 +1,5 @@
 import 'package:uuid/uuid.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 import '../model/pet_model.dart';
 import '../database/pet_dao.dart';
 import 'sync_service.dart';
@@ -18,8 +19,11 @@ class PetService {
   Future<PetModel> createPet(PetModel pet) async {
     // 1. Cria um ID único offline com UUID
     final newId = const Uuid().v4();
+    final currentUserId = Supabase.instance.client.auth.currentUser?.id;
+    
     final localPet = PetModel(
       id: newId,
+      userId: currentUserId,
       name: pet.name,
       breed: pet.breed,
       imageUrl: pet.imageUrl,
@@ -38,8 +42,14 @@ class PetService {
     return localPet;
   }
   Future<PetModel> updatePet(PetModel pet) async {
-    // 1. Marca como pendente de atualização
     final map = pet.toMap();
+    
+    // Injeta o userId do usuário logado se ele estiver nulo para não perder a autoria
+    if (map['user_id'] == null) {
+      map['user_id'] = Supabase.instance.client.auth.currentUser?.id;
+    }
+
+    // 1. Marca como pendente de atualização
     map['sync_status'] = 'pending_update';
     final updatedPet = PetModel.fromMap(map);
 

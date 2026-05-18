@@ -23,9 +23,7 @@ class _NewPetScreenState extends State<NewPetScreen> {
   final _nameController = TextEditingController();
   final _breedController = TextEditingController();
   final _colorController = TextEditingController();
-  final _ageController = TextEditingController();
   final _dateController = TextEditingController();
-  final _descriptionController = TextEditingController();
   final _locationController = TextEditingController();
 
   String _selectedType = 'Cachorro';
@@ -37,9 +35,7 @@ class _NewPetScreenState extends State<NewPetScreen> {
     _nameController.dispose();
     _breedController.dispose();
     _colorController.dispose();
-    _ageController.dispose();
     _dateController.dispose();
-    _descriptionController.dispose();
     _locationController.dispose();
     super.dispose();
   }
@@ -148,7 +144,7 @@ class _NewPetScreenState extends State<NewPetScreen> {
       breed: '$_selectedType - ${_breedController.text.trim()} - ${_colorController.text.trim()}',
       imageUrl: _imagePath!, // Salvamos o caminho local (Upload ocorrerá em background)
       location: _locationController.text.trim(),
-      date: '$finalDate | ${_descriptionController.text.trim()}',
+      date: finalDate,
       isLost: true, // A tela é para pet perdido
     );
 
@@ -236,18 +232,12 @@ class _NewPetScreenState extends State<NewPetScreen> {
                       nameController: _nameController,
                       breedController: _breedController,
                       colorController: _colorController,
-                      ageController: _ageController,
                       selectedType: _selectedType,
                       onTypeChanged: (type) {
                         setState(() {
                           _selectedType = type;
                         });
                       },
-                    ),
-                    const SizedBox(height: 16),
-                    DisappearanceSection(
-                      dateController: _dateController,
-                      descriptionController: _descriptionController,
                     ),
                     const SizedBox(height: 16),
                     LocationSection(

@@ -19,7 +19,6 @@ class EditPetScreen extends StatefulWidget {
   final String age;
   final String location;
   final String date;
-  final String description;
   final String imageUrl;
 
   const EditPetScreen({
@@ -32,7 +31,6 @@ class EditPetScreen extends StatefulWidget {
     required this.age,
     required this.location,
     required this.date,
-    required this.description,
     required this.imageUrl,
   });
 
@@ -46,7 +44,6 @@ class _EditPetScreenState extends State<EditPetScreen> {
   late TextEditingController _colorController;
   late TextEditingController _ageController;
   late TextEditingController _dateController;
-  late TextEditingController _descriptionController;
   late TextEditingController _locationController;
 
   late String _selectedType;
@@ -60,7 +57,6 @@ class _EditPetScreenState extends State<EditPetScreen> {
     _colorController = TextEditingController(text: widget.color);
     _ageController = TextEditingController(text: widget.age);
     _dateController = TextEditingController(text: widget.date);
-    _descriptionController = TextEditingController(text: widget.description);
     _locationController = TextEditingController(text: widget.location);
     _selectedType = widget.type;
     _imagePath = widget.imageUrl; // Inicia com a imagem original (URL ou local)
@@ -73,7 +69,6 @@ class _EditPetScreenState extends State<EditPetScreen> {
     _colorController.dispose();
     _ageController.dispose();
     _dateController.dispose();
-    _descriptionController.dispose();
     _locationController.dispose();
     super.dispose();
   }
@@ -186,14 +181,8 @@ class _EditPetScreenState extends State<EditPetScreen> {
                       nameController: _nameController,
                       breedController: _breedController,
                       colorController: _colorController,
-                      ageController: _ageController,
                       selectedType: _selectedType,
                       onTypeChanged: (type) => setState(() => _selectedType = type),
-                    ),
-                    const SizedBox(height: 16),
-                    DisappearanceSection(
-                      dateController: _dateController,
-                      descriptionController: _descriptionController,
                     ),
                     const SizedBox(height: 16),
                     LocationSection(locationController: _locationController),
@@ -233,12 +222,10 @@ class _EditPetScreenState extends State<EditPetScreen> {
                       breed: '$_selectedType - ${_breedController.text.trim()} - ${_colorController.text.trim()}',
                       imageUrl: _imagePath ?? '', 
                       location: _locationController.text.trim(),
-                      date: '$finalDate | ${_descriptionController.text.trim()}',
+                      date: finalDate,
                       isLost: true,
                     );
-                    
                     context.read<PetController>().editPet(updatedPet);
-                    
                     ScaffoldMessenger.of(context).showSnackBar(
                       const SnackBar(content: Text('Alterações salvas! Sincronizando em segundo plano...'), backgroundColor: Colors.green),
                     );

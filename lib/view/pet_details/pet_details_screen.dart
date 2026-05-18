@@ -1,43 +1,19 @@
+import 'dart:io';
+
 import 'package:encontrapet/view/theme/app_colors.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
-class PetDetailsScreen extends StatelessWidget {
-  final String name;
-  final String breed;
-  final String imageUrl;
-  final String location;
-  final String date;
-  final bool isLost;
-  final String description;
-  final String ownerName;
-  final String ownerPhone;
+import '../../model/pet_model.dart';
 
-  const PetDetailsScreen({
-    super.key,
-    required this.name,
-    required this.breed,
-    required this.imageUrl,
-    required this.location,
-    required this.date,
-    required this.isLost,
-    this.description =
-        'Animal muito dócil e amigável. Usa coleira azul com placa de identificação. Pode estar assustado.',
-    this.ownerName = 'Vladimir Silva',
-    this.ownerPhone = '(11) 99999-9999',
-  });
+class PetDetailsScreen extends StatelessWidget {
+  final PetModel pet;
+
+  const PetDetailsScreen({super.key, required this.pet});
 
   @override
   Widget build(BuildContext context) {
-    final badgeBgColor = isLost
-        ? const Color(0xFFFDF3E7)
-        : const Color(0xFFEAF8F0);
-    final badgeTextColor = isLost
-        ? const Color(0xFFD97706)
-        : const Color(0xFF16A34A);
-    final badgeDotColor = isLost
-        ? const Color(0xFFF97316)
-        : const Color(0xFF22C55E);
+    final isNetworkImage = pet.imageUrl.startsWith('http');
 
     return Scaffold(
       backgroundColor: AppColors.background,
@@ -58,19 +34,29 @@ class PetDetailsScreen extends StatelessWidget {
                           borderRadius: const BorderRadius.vertical(
                             bottom: Radius.circular(28),
                           ),
-                          child: Image.network(
-                            imageUrl,
-                            height: 320,
-                            width: double.infinity,
-                            fit: BoxFit.cover,
-                            errorBuilder: (context, error, _) => Container(
-                              height: 320,
-                              color: Colors.grey[200],
-                              child: const Icon(
-                                Icons.pets,
-                                size: 60,
-                                color: Colors.grey,
-                              ),
+                          child: ClipRRect(
+                            borderRadius: const BorderRadius.vertical(
+                              top: Radius.circular(20),
+                            ),
+                            child: Hero(
+                              tag: 'pet_image_${pet.id ?? pet.hashCode}',
+                              child: isNetworkImage
+                                  ? Image.network(pet.imageUrl, fit: BoxFit.cover, height: 350, width: double.infinity)
+                                  : Image.file(
+                                      File(pet.imageUrl),
+                                      fit: BoxFit.cover,
+                                      height: 350,
+                                      width: double.infinity,
+                                      errorBuilder: (c, e, s) => const SizedBox(
+                                        height: 350,
+                                        width: double.infinity,
+                                        child: Icon(
+                                          Icons.broken_image,
+                                          size: 50,
+                                          color: Colors.grey,
+                                        ),
+                                      ),
+                                    ),
                             ),
                           ),
                         ),
@@ -108,39 +94,6 @@ class PetDetailsScreen extends StatelessWidget {
                                     ),
                                   ),
                                 ),
-                                // Status badge overlaid
-                                Container(
-                                  padding: const EdgeInsets.symmetric(
-                                    horizontal: 14,
-                                    vertical: 7,
-                                  ),
-                                  decoration: BoxDecoration(
-                                    color: badgeBgColor,
-                                    borderRadius: BorderRadius.circular(16),
-                                  ),
-                                  child: Row(
-                                    mainAxisSize: MainAxisSize.min,
-                                    children: [
-                                      Container(
-                                        width: 7,
-                                        height: 7,
-                                        decoration: BoxDecoration(
-                                          color: badgeDotColor,
-                                          shape: BoxShape.circle,
-                                        ),
-                                      ),
-                                      const SizedBox(width: 6),
-                                      Text(
-                                        isLost ? 'Perdido' : 'Encontrado',
-                                        style: GoogleFonts.roboto(
-                                          color: badgeTextColor,
-                                          fontSize: 13,
-                                          fontWeight: FontWeight.bold,
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ),
                               ],
                             ),
                           ),
@@ -156,7 +109,7 @@ class PetDetailsScreen extends StatelessWidget {
                         children: [
                           // Name
                           Text(
-                            name,
+                            pet.name,
                             style: GoogleFonts.roboto(
                               fontSize: 28,
                               fontWeight: FontWeight.bold,
@@ -165,7 +118,7 @@ class PetDetailsScreen extends StatelessWidget {
                           ),
                           const SizedBox(height: 4),
                           Text(
-                            breed,
+                            pet.breed,
                             style: GoogleFonts.roboto(
                               fontSize: 16,
                               color: Colors.grey[600],
@@ -174,31 +127,18 @@ class PetDetailsScreen extends StatelessWidget {
                           const SizedBox(height: 14),
 
                           // Location
-                          _buildInfoRow(Icons.location_on_outlined, location),
+                          _buildInfoRow(
+                            Icons.location_on_outlined,
+                            pet.location,
+                          ),
                           const SizedBox(height: 10),
 
                           // Date
-                          _buildInfoRow(Icons.calendar_month_outlined, date),
-                          const SizedBox(height: 20),
+                          _buildInfoRow(
+                            Icons.calendar_month_outlined,
+                            pet.date,
+                          ),
 
-                          // Description
-                          Text(
-                            'Descrição',
-                            style: GoogleFonts.roboto(
-                              fontSize: 16,
-                              fontWeight: FontWeight.bold,
-                              color: AppColors.textPrimary,
-                            ),
-                          ),
-                          const SizedBox(height: 8),
-                          Text(
-                            description,
-                            style: GoogleFonts.roboto(
-                              fontSize: 14,
-                              color: AppColors.textSecondary,
-                              height: 1.6,
-                            ),
-                          ),
                           const SizedBox(height: 24),
 
                           // Owner contact card
@@ -212,48 +152,6 @@ class PetDetailsScreen extends StatelessWidget {
                                   color: Colors.black.withValues(alpha: 0.04),
                                   blurRadius: 10,
                                   offset: const Offset(0, 4),
-                                ),
-                              ],
-                            ),
-                            child: Row(
-                              children: [
-                                // Owner avatar
-                                Container(
-                                  width: 48,
-                                  height: 48,
-                                  decoration: const BoxDecoration(
-                                    shape: BoxShape.circle,
-                                    color: Color(0xFFE1F5FE),
-                                  ),
-                                  child: const Icon(
-                                    Icons.person_outline_rounded,
-                                    color: AppColors.primary,
-                                    size: 26,
-                                  ),
-                                ),
-                                const SizedBox(width: 12),
-                                Expanded(
-                                  child: Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: [
-                                      Text(
-                                        ownerName,
-                                        style: GoogleFonts.roboto(
-                                          fontSize: 15,
-                                          fontWeight: FontWeight.bold,
-                                          color: AppColors.textPrimary,
-                                        ),
-                                      ),
-                                      Text(
-                                        ownerPhone,
-                                        style: GoogleFonts.roboto(
-                                          fontSize: 13,
-                                          color: AppColors.textSecondary,
-                                        ),
-                                      ),
-                                    ],
-                                  ),
                                 ),
                               ],
                             ),
@@ -325,6 +223,4 @@ class PetDetailsScreen extends StatelessWidget {
       ],
     );
   }
-
-
 }

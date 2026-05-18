@@ -2,8 +2,24 @@ import 'package:flutter/material.dart';
 import 'package:encontrapet/view/theme/app_colors.dart';
 import 'package:google_fonts/google_fonts.dart';
 
-class HomeSearchBar extends StatelessWidget {
-  const HomeSearchBar({super.key});
+class HomeSearchBar extends StatefulWidget {
+  final ValueChanged<String>? onChanged;
+
+  const HomeSearchBar({super.key, this.onChanged});
+
+  @override
+  State<HomeSearchBar> createState() => _HomeSearchBarState();
+}
+
+class _HomeSearchBarState extends State<HomeSearchBar> {
+  final TextEditingController _controller = TextEditingController();
+  bool _hasText = false;
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -22,6 +38,13 @@ class HomeSearchBar extends StatelessWidget {
           ],
         ),
         child: TextField(
+          controller: _controller,
+          onChanged: (value) {
+            setState(() {
+              _hasText = value.isNotEmpty;
+            });
+            widget.onChanged?.call(value);
+          },
           decoration: InputDecoration(
             hintText: 'Buscar por nome, raça ou local',
             hintStyle: GoogleFonts.roboto(
@@ -33,6 +56,22 @@ class HomeSearchBar extends StatelessWidget {
               color: Colors.grey,
               size: 22,
             ),
+            suffixIcon: _hasText
+                ? GestureDetector(
+                    onTap: () {
+                      _controller.clear();
+                      setState(() {
+                        _hasText = false;
+                      });
+                      widget.onChanged?.call('');
+                    },
+                    child: const Icon(
+                      Icons.close,
+                      color: Colors.grey,
+                      size: 20,
+                    ),
+                  )
+                : null,
             border: InputBorder.none,
             contentPadding: const EdgeInsets.symmetric(vertical: 14.0, horizontal: 16.0),
           ),

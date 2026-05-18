@@ -6,7 +6,6 @@ class BasicInfoSection extends StatelessWidget {
   final TextEditingController nameController;
   final TextEditingController breedController;
   final TextEditingController colorController;
-  final TextEditingController ageController;
   final String selectedType;
   final ValueChanged<String> onTypeChanged;
 
@@ -15,7 +14,6 @@ class BasicInfoSection extends StatelessWidget {
     required this.nameController,
     required this.breedController,
     required this.colorController,
-    required this.ageController,
     required this.selectedType,
     required this.onTypeChanged,
   });
@@ -133,15 +131,6 @@ class BasicInfoSection extends StatelessWidget {
                 ),
               ),
             ],
-          ),
-          const SizedBox(height: 16),
-
-          // Idade
-          _buildLabel('Idade aproximada'),
-          const SizedBox(height: 6),
-          _buildTextField(
-            placeholder: '3 anos',
-            controller: ageController,
           ),
         ],
       ),

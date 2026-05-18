@@ -1,14 +1,61 @@
 import 'package:flutter/material.dart';
 import 'package:encontrapet/view/theme/app_colors.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:encontrapet/service/location_service.dart';
 
-class LocationSection extends StatelessWidget {
+class LocationSection extends StatefulWidget {
   final TextEditingController locationController;
 
   const LocationSection({
     super.key,
     required this.locationController,
   });
+
+  @override
+  State<LocationSection> createState() => _LocationSectionState();
+}
+
+class _LocationSectionState extends State<LocationSection> {
+  final LocationService _locationService = LocationService();
+  bool _isLoadingLocation = false;
+
+  Future<void> _fetchLocation() async {
+    setState(() {
+      _isLoadingLocation = true;
+    });
+
+    try {
+      final addressData = await _locationService.getCurrentAddress();
+      if (addressData != null) {
+        final bairro = addressData['bairro'] ?? '';
+        final cidade = addressData['cidade'] ?? '';
+        final estado = addressData['estado'] ?? '';
+
+        List<String> parts = [];
+        if (bairro.isNotEmpty) parts.add(bairro);
+        if (cidade.isNotEmpty) parts.add(cidade);
+        
+        String locationStr = parts.join(', ');
+        if (estado.isNotEmpty) {
+          locationStr += locationStr.isNotEmpty ? ' - $estado' : estado;
+        }
+
+        widget.locationController.text = locationStr;
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Erro ao obter localização: $e')),
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isLoadingLocation = false;
+        });
+      }
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -41,10 +88,10 @@ class LocationSection extends StatelessWidget {
 
           // Location text field
           TextFormField(
-            controller: locationController,
+            controller: widget.locationController,
             style: GoogleFonts.roboto(fontSize: 14, color: AppColors.textPrimary),
             decoration: InputDecoration(
-              hintText: 'Rua, bairro, cidade',
+              hintText: 'Bairro, cidade - estado',
               hintStyle: GoogleFonts.roboto(color: Colors.grey[400], fontSize: 14),
               filled: true,
               fillColor: AppColors.background,
@@ -71,20 +118,22 @@ class LocationSection extends StatelessWidget {
             width: double.infinity,
             height: 48,
             child: OutlinedButton.icon(
-              onPressed: () {
-                // Futuramente pode integrar o pacote geolocator aqui
-              },
-              icon: const Icon(Icons.near_me_outlined, color: Color(0xFF00B4FF), size: 18),
+              onPressed: _isLoadingLocation ? null : _fetchLocation,
+              icon: _isLoadingLocation 
+                ? const SizedBox(
+                    width: 18, height: 18, 
+                    child: CircularProgressIndicator(strokeWidth: 2))
+                : const Icon(Icons.near_me_outlined, color: Color(0xFF00B4FF), size: 18),
               label: Text(
-                'Usar localização atual',
+                _isLoadingLocation ? 'Obtendo localização...' : 'Usar localização atual',
                 style: GoogleFonts.roboto(
                   fontSize: 14,
                   fontWeight: FontWeight.w600,
-                  color: const Color(0xFF00B4FF),
+                  color: _isLoadingLocation ? Colors.grey : const Color(0xFF00B4FF),
                 ),
               ),
               style: OutlinedButton.styleFrom(
-                side: const BorderSide(color: Color(0xFF00B4FF), width: 1.5),
+                side: BorderSide(color: _isLoadingLocation ? Colors.grey : const Color(0xFF00B4FF), width: 1.5),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(24),
                 ),
@@ -92,72 +141,9 @@ class LocationSection extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 16),
-
-          // Map Placeholder
-          ClipRRect(
-            borderRadius: BorderRadius.circular(16),
-            child: Container(
-              height: 140,
-              width: double.infinity,
-              color: const Color(0xFFD6EBF5),
-              child: Stack(
-                alignment: Alignment.center,
-                children: [
-                  // Decorative curves
-                  Positioned(
-                    bottom: 30,
-                    left: 0,
-                    right: 0,
-                    child: CustomPaint(
-                      size: const Size(double.infinity, 40),
-                      painter: _MapCurvePainter(),
-                    ),
-                  ),
-                  // Map pin
-                  Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Container(
-                        width: 16,
-                        height: 16,
-                        decoration: BoxDecoration(
-                          color: AppColors.primary,
-                          shape: BoxShape.circle,
-                          border: Border.all(color: Colors.white, width: 2),
-                          boxShadow: [
-                            BoxShadow(
-                              color: AppColors.primary.withValues(alpha: 0.3),
-                              blurRadius: 8,
-                            ),
-                          ],
-                        ),
-                      ),
-                    ],
-                  ),
-                ],
-              ),
-            ),
-          ),
         ],
       ),
     );
   }
 }
 
-class _MapCurvePainter extends CustomPainter {
-  @override
-  void paint(Canvas canvas, Size size) {
-    final paint = Paint()
-      ..color = const Color(0xFF90CAE4)
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = 2;
-
-    final path = Path();
-    path.moveTo(0, 20);
-    path.cubicTo(size.width * 0.25, 0, size.width * 0.75, 40, size.width, 20);
-    canvas.drawPath(path, paint);
-  }
-
-  @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
-}

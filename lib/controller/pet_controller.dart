@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 import '../model/pet_model.dart';
 import '../service/pet_service.dart';
 
@@ -7,10 +8,64 @@ class PetController extends ChangeNotifier {
 
   List<PetModel> _allPets = [];
   bool _isLoading = false;
+  String _searchQuery = '';
+  String _selectedCategory = 'Todos';
 
-  // Filtragem básica, no futuro você pode filtrar pelo ID do usuário logado
-  List<PetModel> get feedPets => _allPets;
-  List<PetModel> get myPets => _allPets; // MVP: Exibe todos os pets gerados localmente pelo usuário
+  // Setters reativos para busca e filtro
+  set searchQuery(String value) {
+    _searchQuery = value;
+    notifyListeners();
+  }
+
+  set selectedCategory(String value) {
+    _selectedCategory = value;
+    notifyListeners();
+  }
+
+  String get searchQuery => _searchQuery;
+  String get selectedCategory => _selectedCategory;
+
+  // Feed filtrado por categoria e busca textual (em memória, latência zero)
+  List<PetModel> get feedPets {
+    List<PetModel> filtered = _allPets;
+
+    // 1. Filtro por categoria
+    if (_selectedCategory != 'Todos') {
+      filtered = filtered.where((pet) {
+        final breedLower = pet.breed.toLowerCase();
+        switch (_selectedCategory) {
+          case 'Cachorros':
+            return breedLower.startsWith('cachorro');
+          case 'Gatos':
+            return breedLower.startsWith('gato');
+          case 'Outros':
+            return !breedLower.startsWith('cachorro') && !breedLower.startsWith('gato');
+          default:
+            return true;
+        }
+      }).toList();
+    }
+
+    // 2. Filtro por texto de busca
+    if (_searchQuery.isNotEmpty) {
+      final query = _searchQuery.toLowerCase();
+      filtered = filtered.where((pet) {
+        return pet.name.toLowerCase().contains(query) ||
+               pet.breed.toLowerCase().contains(query) ||
+               pet.location.toLowerCase().contains(query);
+      }).toList();
+    }
+
+    return filtered;
+  }
+  
+  // Filtra apenas os pets pertencentes ao usuário logado atual
+  List<PetModel> get myPets {
+    final currentUserId = Supabase.instance.client.auth.currentUser?.id;
+    if (currentUserId == null) return [];
+    return _allPets.where((pet) => pet.userId == currentUserId).toList();
+  }
+
   bool get isLoading => _isLoading;
 
   Future<void> fetchAllPets() async {

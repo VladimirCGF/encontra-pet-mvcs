@@ -23,7 +23,7 @@ class DatabaseHelper {
 
     return await openDatabase(
       path,
-      version: 3,
+      version: 4,
       onCreate: _onCreate,
       onUpgrade: _onUpgrade,
     );
@@ -34,6 +34,7 @@ class DatabaseHelper {
     await db.execute('''
       CREATE TABLE pets(
         id TEXT PRIMARY KEY,
+        user_id TEXT,
         name TEXT,
         breed TEXT,
         imageUrl TEXT,
@@ -62,6 +63,9 @@ class DatabaseHelper {
     }
     if (oldVersion < 3) {
       await db.execute('ALTER TABLE users ADD COLUMN sync_status TEXT DEFAULT "synced"');
+    }
+    if (oldVersion < 4) {
+      await db.execute('ALTER TABLE pets ADD COLUMN user_id TEXT');
     }
   }
 }

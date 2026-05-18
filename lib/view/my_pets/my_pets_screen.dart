@@ -60,9 +60,21 @@ class MyPetsScreen extends StatelessWidget {
                   ? const Center(child: CircularProgressIndicator(color: AppColors.primary))
                   : pets.isEmpty
                       ? Center(
-                          child: Text(
-                            'Você ainda não publicou nenhum pet.',
-                            style: GoogleFonts.roboto(color: AppColors.textSecondary, fontSize: 16),
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Icon(Icons.pets, size: 80, color: AppColors.textSecondary.withValues(alpha: 0.3)),
+                              const SizedBox(height: 16),
+                              Text(
+                                'Você ainda não cadastrou nenhum pet.',
+                                style: GoogleFonts.roboto(color: AppColors.textPrimary, fontSize: 18, fontWeight: FontWeight.bold),
+                              ),
+                              const SizedBox(height: 8),
+                              Text(
+                                'Publique o primeiro clicando no botão + abaixo.',
+                                style: GoogleFonts.roboto(color: AppColors.textSecondary, fontSize: 14),
+                              ),
+                            ],
                           ),
                         )
                       : RefreshIndicator(

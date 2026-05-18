@@ -1,38 +1,20 @@
-import 'package:flutter/material.dart';
-import 'package:encontrapet/view/theme/app_colors.dart';
+import 'dart:io';
+
 import 'package:encontrapet/view/pet_details/pet_details_screen.dart';
+import 'package:encontrapet/view/theme/app_colors.dart';
+import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
-class PetCard extends StatelessWidget {
-  final String name;
-  final String breed;
-  final String imageUrl;
-  final String location;
-  final String date;
-  final bool isLost;
+import '../../../model/pet_model.dart';
 
-  const PetCard({
-    super.key,
-    required this.name,
-    required this.breed,
-    required this.imageUrl,
-    required this.location,
-    required this.date,
-    required this.isLost,
-  });
+class PetCard extends StatelessWidget {
+  final PetModel pet;
+
+  const PetCard({super.key, required this.pet});
 
   @override
   Widget build(BuildContext context) {
-    // Styling colors for status badges
-    final badgeBgColor = isLost 
-        ? const Color(0xFFFDF3E7) // Light orange
-        : const Color(0xFFEAF8F0); // Light green
-    final badgeTextColor = isLost 
-        ? const Color(0xFFD97706) // Darker orange
-        : const Color(0xFF16A34A); // Darker green
-    final badgeDotColor = isLost 
-        ? const Color(0xFFF97316) 
-        : const Color(0xFF22C55E);
+    final isNetworkImage = pet.imageUrl.startsWith('http');
 
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 12.0),
@@ -55,54 +37,28 @@ class PetCard extends StatelessWidget {
             children: [
               // Image Container
               ClipRRect(
-                borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
-                child: Image.network(
-                  imageUrl,
-                  height: 240,
-                  width: double.infinity,
-                  fit: BoxFit.cover,
-                  errorBuilder: (context, error, stackTrace) {
-                    return Container(
-                      height: 240,
-                      color: Colors.grey[200],
-                      child: const Icon(Icons.pets, size: 50, color: Colors.grey),
-                    );
-                  },
+                borderRadius: const BorderRadius.vertical(
+                  top: Radius.circular(20),
                 ),
-              ),
-              // Overlaid Status Badge (Top Left)
-              Positioned(
-                left: 16,
-                top: 16,
-                child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                  decoration: BoxDecoration(
-                    color: badgeBgColor,
-                    borderRadius: BorderRadius.circular(16),
-                  ),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      // Status Dot
-                      Container(
-                        width: 6,
-                        height: 6,
-                        decoration: BoxDecoration(
-                          color: badgeDotColor,
-                          shape: BoxShape.circle,
+                child: Hero(
+                  tag: 'pet_image_${pet.id ?? pet.hashCode}',
+                  child: isNetworkImage
+                      ? Image.network(pet.imageUrl, fit: BoxFit.cover, height: 200, width: double.infinity)
+                      : Image.file(
+                          File(pet.imageUrl),
+                          fit: BoxFit.cover,
+                          height: 200,
+                          width: double.infinity,
+                          errorBuilder: (c, e, s) => const SizedBox(
+                            height: 200,
+                            width: double.infinity,
+                            child: Icon(
+                              Icons.broken_image,
+                              size: 50,
+                              color: Colors.grey,
+                            ),
+                          ),
                         ),
-                      ),
-                      const SizedBox(width: 6),
-                      Text(
-                        isLost ? 'Perdido' : 'Encontrado',
-                        style: GoogleFonts.roboto(
-                          color: badgeTextColor,
-                          fontSize: 12,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                    ],
-                  ),
                 ),
               ),
             ],
@@ -115,25 +71,63 @@ class PetCard extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 // Pet Name
-                Text(
-                  name,
-                  style: GoogleFonts.roboto(
-                    fontSize: 20,
-                    fontWeight: FontWeight.bold,
-                    color: AppColors.textPrimary,
-                  ),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Flexible(
+                      child: Text(
+                        pet.name,
+                        style: GoogleFonts.roboto(
+                          fontSize: 22,
+                          fontWeight: FontWeight.w800,
+                          color: AppColors.textPrimary,
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                      decoration: BoxDecoration(
+                        color: pet.isLost
+                            ? Colors.red[50]
+                            : Colors.green[50],
+                        borderRadius: BorderRadius.circular(100),
+                        border: Border.all(
+                          color: pet.isLost
+                              ? Colors.red[200]!
+                              : Colors.green[200]!,
+                          width: 1,
+                        ),
+                      ),
+                      child: Text(
+                        pet.isLost ? 'PERDIDO' : 'ENCONTRADO',
+                        style: GoogleFonts.roboto(
+                          fontSize: 11,
+                          fontWeight: FontWeight.w900,
+                          letterSpacing: 0.5,
+                          color: pet.isLost
+                              ? Colors.red[700]
+                              : Colors.green[700],
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
+
                 const SizedBox(height: 2),
                 // Breed
                 Text(
-                  breed,
+                  pet.breed,
                   style: GoogleFonts.roboto(
                     fontSize: 14,
                     color: Colors.grey[600],
                   ),
                 ),
                 const SizedBox(height: 16),
-                
+
                 // Location Row
                 Row(
                   children: [
@@ -145,7 +139,7 @@ class PetCard extends StatelessWidget {
                     const SizedBox(width: 8),
                     Expanded(
                       child: Text(
-                        location,
+                        pet.location,
                         style: GoogleFonts.roboto(
                           fontSize: 14,
                           color: AppColors.textSecondary,
@@ -155,7 +149,7 @@ class PetCard extends StatelessWidget {
                   ],
                 ),
                 const SizedBox(height: 8),
-                
+
                 // Date Row
                 Row(
                   children: [
@@ -167,7 +161,7 @@ class PetCard extends StatelessWidget {
                     const SizedBox(width: 8),
                     Expanded(
                       child: Text(
-                        date,
+                        pet.date,
                         style: GoogleFonts.roboto(
                           fontSize: 14,
                           color: AppColors.textSecondary,
@@ -187,13 +181,7 @@ class PetCard extends StatelessWidget {
                       Navigator.push(
                         context,
                         MaterialPageRoute(
-                          builder: (_) => PetDetailsScreen(
-                            name: name,
-                            breed: breed,
-                            imageUrl: imageUrl,
-                            location: location,
-                            date: date,
-                            isLost: isLost,
+                          builder: (_) => PetDetailsScreen(pet: pet,
                           ),
                         ),
                       );
@@ -218,10 +206,7 @@ class PetCard extends StatelessWidget {
                           ),
                         ),
                         const SizedBox(width: 6),
-                        const Icon(
-                          Icons.chevron_right,
-                          size: 20,
-                        ),
+                        const Icon(Icons.chevron_right, size: 20),
                       ],
                     ),
                   ),

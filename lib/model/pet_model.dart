@@ -1,5 +1,6 @@
 class PetModel {
   final String? id;
+  final String? userId;
   final String name;
   final String breed;
   final String imageUrl;
@@ -10,6 +11,7 @@ class PetModel {
 
   PetModel({
     this.id,
+    this.userId,
     required this.name,
     required this.breed,
     required this.imageUrl,
@@ -22,6 +24,7 @@ class PetModel {
   factory PetModel.fromMap(Map<String, dynamic> map) {
     return PetModel(
       id: map['id'] as String?,
+      userId: map['user_id'] as String?,
       name: map['name'] as String,
       breed: map['breed'] as String,
       imageUrl: map['imageUrl'] as String,
@@ -35,6 +38,7 @@ class PetModel {
   Map<String, dynamic> toMap() {
     return {
       'id': id,
+      'user_id': userId,
       'name': name,
       'breed': breed,
       'imageUrl': imageUrl,

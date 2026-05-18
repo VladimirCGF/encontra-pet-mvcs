@@ -1,3 +1,4 @@
+import 'package:encontrapet/view/profile/widgets/user_avatar.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:encontrapet/controller/auth_controller.dart';
@@ -98,41 +99,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
               const SizedBox(height: 10),
               // Foto Placeholder
               Center(
-                child: Stack(
-                  children: [
-                    Container(
-                      width: 110,
-                      height: 110,
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        image: const DecorationImage(
-                          image: NetworkImage('https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?auto=format&fit=crop&q=80&w=200'),
-                          fit: BoxFit.cover,
-                        ),
-                        border: Border.all(
-                          color: AppColors.primary.withValues(alpha: 0.2),
-                          width: 4.0,
-                        ),
-                      ),
-                    ),
-                    Positioned(
-                      bottom: 0,
-                      right: 0,
-                      child: Container(
-                        padding: const EdgeInsets.all(6),
-                        decoration: const BoxDecoration(
-                          color: AppColors.primary,
-                          shape: BoxShape.circle,
-                        ),
-                        child: const Icon(
-                          Icons.camera_alt_rounded,
-                          color: Colors.white,
-                          size: 18,
-                        ),
-                      ),
-                    )
-                  ],
-                ),
+                child: const UserAvatar()
               ),
               const SizedBox(height: 36),
 

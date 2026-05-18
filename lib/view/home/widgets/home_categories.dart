@@ -3,7 +3,9 @@ import 'package:encontrapet/view/theme/app_colors.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 class HomeCategories extends StatefulWidget {
-  const HomeCategories({super.key});
+  final ValueChanged<String>? onCategorySelected;
+
+  const HomeCategories({super.key, this.onCategorySelected});
 
   @override
   State<HomeCategories> createState() => _HomeCategoriesState();
@@ -30,6 +32,7 @@ class _HomeCategoriesState extends State<HomeCategories> {
                 setState(() {
                   _selectedIndex = index;
                 });
+                widget.onCategorySelected?.call(_categories[index]);
               },
               child: AnimatedContainer(
                 duration: const Duration(milliseconds: 200),
@@ -64,3 +67,4 @@ class _HomeCategoriesState extends State<HomeCategories> {
     );
   }
 }
+

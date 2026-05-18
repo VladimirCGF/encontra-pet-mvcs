@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:encontrapet/controller/pet_controller.dart';
 import 'package:encontrapet/view/theme/app_colors.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'widgets/home_header.dart';
 import 'widgets/home_search_bar.dart';
 import 'widgets/home_categories.dart';
@@ -33,6 +34,7 @@ class _HomeScreenState extends State<HomeScreen> {
     final petController = context.watch<PetController>();
     final pets = petController.feedPets;
     final isLoading = petController.isLoading;
+    final hasActiveFilter = petController.searchQuery.isNotEmpty || petController.selectedCategory != 'Todos';
 
     return Scaffold(
       backgroundColor: AppColors.background,
@@ -50,12 +52,20 @@ class _HomeScreenState extends State<HomeScreen> {
                 // 1. Header
                 const HomeHeader(),
                 
-                // 2. Search Bar
-                const HomeSearchBar(),
+                // 2. Search Bar (conectado ao Controller)
+                HomeSearchBar(
+                  onChanged: (query) {
+                    context.read<PetController>().searchQuery = query;
+                  },
+                ),
                 const SizedBox(height: 12),
                 
-                // 3. Categories (Horizontal scrollable chips)
-                const HomeCategories(),
+                // 3. Categories (conectado ao Controller)
+                HomeCategories(
+                  onCategorySelected: (category) {
+                    context.read<PetController>().selectedCategory = category;
+                  },
+                ),
                 
                 // 4. Pet List Title Section
                 const PetListSection(),
@@ -67,9 +77,30 @@ class _HomeScreenState extends State<HomeScreen> {
                     child: Center(child: CircularProgressIndicator(color: AppColors.primary)),
                   )
                 else if (pets.isEmpty)
-                  const Padding(
-                    padding: EdgeInsets.all(64.0),
-                    child: Center(child: Text('Nenhum pet encontrado.')),
+                  Padding(
+                    padding: const EdgeInsets.all(48.0),
+                    child: Center(
+                      child: Column(
+                        children: [
+                          Icon(
+                            hasActiveFilter ? Icons.search_off : Icons.pets,
+                            size: 64,
+                            color: AppColors.textSecondary.withValues(alpha: 0.3),
+                          ),
+                          const SizedBox(height: 16),
+                          Text(
+                            hasActiveFilter
+                                ? 'Nenhum pet encontrado para esta busca.'
+                                : 'Nenhum pet cadastrado ainda.',
+                            style: GoogleFonts.roboto(
+                              fontSize: 16,
+                              color: AppColors.textSecondary,
+                            ),
+                            textAlign: TextAlign.center,
+                          ),
+                        ],
+                      ),
+                    ),
                   )
                 else
                   ListView.builder(
@@ -78,13 +109,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     itemCount: pets.length,
                     itemBuilder: (context, index) {
                       final pet = pets[index];
-                      return PetCard(
-                        name: pet.name,
-                        breed: pet.breed,
-                        imageUrl: pet.imageUrl,
-                        location: pet.location,
-                        date: pet.date,
-                        isLost: pet.isLost,
+                      return PetCard(pet: pet,
                       );
                     },
                   ),
@@ -99,3 +124,4 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 }
+

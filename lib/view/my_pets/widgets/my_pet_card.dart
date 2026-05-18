@@ -69,7 +69,6 @@ class MyPetCard extends StatelessWidget {
           age: '', // Idade não estava sendo enviada para a Home no MVP
           location: pet.location,
           date: dateStr,
-          description: description,
           originalPetId: pet.id!,
           imageUrl: pet.imageUrl,
         ),
@@ -107,13 +106,22 @@ class MyPetCard extends StatelessWidget {
             ),
             child: ClipRRect(
               borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
-              child: isNetworkImage
-                  ? Image.network(pet.imageUrl, fit: BoxFit.cover)
-                  : Image.file(
-                      File(pet.imageUrl),
-                      fit: BoxFit.cover,
-                      errorBuilder: (c, e, s) => const Icon(Icons.broken_image, size: 50, color: Colors.grey),
-                    ),
+              child: Hero(
+                tag: 'pet_image_${pet.id ?? pet.hashCode}',
+                child: isNetworkImage
+                    ? Image.network(pet.imageUrl, fit: BoxFit.cover, height: 180, width: double.infinity)
+                    : Image.file(
+                        File(pet.imageUrl),
+                        fit: BoxFit.cover,
+                        height: 180,
+                        width: double.infinity,
+                        errorBuilder: (c, e, s) => const SizedBox(
+                          height: 180,
+                          width: double.infinity,
+                          child: Icon(Icons.broken_image, size: 50, color: Colors.grey),
+                        ),
+                      ),
+              ),
             ),
           ),
           
