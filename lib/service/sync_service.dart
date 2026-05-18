@@ -10,6 +10,11 @@ import '../model/user_model.dart';
 import 'package:flutter/foundation.dart';
 
 class SyncService {
+  // Singleton — garante que _isSyncing é compartilhado globalmente
+  static final SyncService _instance = SyncService._internal();
+  factory SyncService() => _instance;
+  SyncService._internal();
+
   final PetDao _petDao = PetDao();
   final PetApi _petApi = PetApi();
   final UserDao _userDao = UserDao();
@@ -127,7 +132,13 @@ class SyncService {
          debugPrint('➡️ [SyncService] Buscando atualizações (Pull) da nuvem...');
          final remotePets = await _petApi.fetchPets();
          for (var remotePet in remotePets) {
-           await _petDao.insertPet(remotePet); // Como o SQLite tem conflictAlgorithm.replace, ele atualiza
+           // Só sobrescreve se o registro local não tiver pendência de envio
+           final localPet = await _petDao.getPetById(remotePet.id!);
+           if (localPet == null || localPet.syncStatus == 'synced') {
+             await _petDao.insertPet(remotePet);
+           } else {
+             debugPrint('⏭️ [SyncService] Pet ${remotePet.id} ignorado no Pull (pendência local: ${localPet.syncStatus})');
+           }
          }
          debugPrint('✅ [SyncService] Pull concluído. Banco local sincronizado.');
       } catch(e) {

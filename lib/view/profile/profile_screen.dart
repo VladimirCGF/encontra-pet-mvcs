@@ -3,7 +3,7 @@ import 'package:encontrapet/view/theme/app_colors.dart';
 import 'package:encontrapet/view/auth/login_page.dart';
 import 'package:encontrapet/view/profile/edit_profile_screen.dart';
 import 'package:google_fonts/google_fonts.dart';
-import '../widgets/custom_bottom_app_bar.dart';
+
 import 'widgets/profile_header.dart';
 import 'widgets/profile_menu_item.dart';
 import 'widgets/logout_button.dart';
@@ -95,9 +95,7 @@ class ProfileScreen extends StatelessWidget {
         ),
       ),
 
-      
-      // 6. Custom BottomAppBar notched navigation
-        bottomNavigationBar: const CustomBottomAppBar(currentIndex: 2),
+
     );
   }
 }

@@ -63,10 +63,9 @@ class PetService {
   }
 
   Future<void> deletePet(String id) async {
-    // Para deleção offline, buscamos o pet, marcamos como pending_delete e atualizamos localmente
-    // O SyncService fará o trabalho de deletar fisicamente do SQLite após remover da nuvem
-    final pets = await _petDao.getPets();
-    final pet = pets.firstWhere((p) => p.id == id);
+    // Busca apenas o pet alvo diretamente por ID (O(1) em vez de O(n))
+    final pet = await _petDao.getPetById(id);
+    if (pet == null) return;
     
     final map = pet.toMap();
     map['sync_status'] = 'pending_delete';

@@ -3,6 +3,11 @@ import '../model/pet_model.dart';
 import 'db_helper.dart';
 
 class PetDao {
+  // Singleton
+  static final PetDao _instance = PetDao._internal();
+  factory PetDao() => _instance;
+  PetDao._internal();
+
   final DatabaseHelper _dbHelper = DatabaseHelper();
 
   Future<void> insertPet(PetModel pet) async {
@@ -21,6 +26,18 @@ class PetDao {
     return List.generate(maps.length, (i) {
       return PetModel.fromMap(maps[i]);
     });
+  }
+
+  Future<PetModel?> getPetById(String id) async {
+    final db = await _dbHelper.database;
+    final List<Map<String, dynamic>> maps = await db.query(
+      'pets',
+      where: 'id = ?',
+      whereArgs: [id],
+      limit: 1,
+    );
+    if (maps.isNotEmpty) return PetModel.fromMap(maps.first);
+    return null;
   }
 
   Future<void> updatePet(PetModel pet) async {
@@ -52,3 +69,4 @@ class PetDao {
     );
   }
 }
+

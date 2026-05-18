@@ -3,7 +3,7 @@ import 'package:provider/provider.dart';
 import 'package:encontrapet/controller/pet_controller.dart';
 import 'package:encontrapet/view/theme/app_colors.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:encontrapet/view/widgets/custom_bottom_app_bar.dart';
+
 import 'widgets/my_pet_card.dart';
 
 class MyPetsScreen extends StatelessWidget {
@@ -95,7 +95,7 @@ class MyPetsScreen extends StatelessWidget {
           ],
         ),
       ),
-      bottomNavigationBar: const CustomBottomAppBar(currentIndex: 1), 
+
     );
   }
 }

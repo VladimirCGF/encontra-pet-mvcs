@@ -3,6 +3,11 @@ import '../model/user_model.dart';
 import 'db_helper.dart';
 
 class UserDao {
+  // Singleton
+  static final UserDao _instance = UserDao._internal();
+  factory UserDao() => _instance;
+  UserDao._internal();
+
   final DatabaseHelper _dbHelper = DatabaseHelper();
 
   Future<void> insertUser(UserModel user) async {

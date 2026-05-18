@@ -43,7 +43,7 @@ class PetCard extends StatelessWidget {
                 child: Hero(
                   tag: 'pet_image_${pet.id ?? pet.hashCode}',
                   child: isNetworkImage
-                      ? Image.network(pet.imageUrl, fit: BoxFit.cover, height: 200, width: double.infinity)
+                      ? Image.network(pet.imageUrl, fit: BoxFit.cover, height: 200, width: double.infinity, cacheWidth: 600)
                       : Image.file(
                           File(pet.imageUrl),
                           fit: BoxFit.cover,

@@ -1,7 +1,7 @@
-import 'package:encontrapet/view/widgets/custom_bottom_app_bar.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:encontrapet/controller/pet_controller.dart';
+import 'package:encontrapet/model/pet_model.dart';
 import 'package:encontrapet/view/theme/app_colors.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'widgets/home_header.dart';
@@ -31,11 +31,6 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final petController = context.watch<PetController>();
-    final pets = petController.feedPets;
-    final isLoading = petController.isLoading;
-    final hasActiveFilter = petController.searchQuery.isNotEmpty || petController.selectedCategory != 'Todos';
-
     return Scaffold(
       backgroundColor: AppColors.background,
       body: SafeArea(
@@ -71,56 +66,67 @@ class _HomeScreenState extends State<HomeScreen> {
                 const PetListSection(),
                 
                 // 5. Vertical list of Pet Cards
-                if (isLoading && pets.isEmpty) // Apenas mostra loading em tela cheia na primeira carga
-                  const Padding(
-                    padding: EdgeInsets.all(64.0),
-                    child: Center(child: CircularProgressIndicator(color: AppColors.primary)),
-                  )
-                else if (pets.isEmpty)
-                  Padding(
-                    padding: const EdgeInsets.all(48.0),
-                    child: Center(
-                      child: Column(
-                        children: [
-                          Icon(
-                            hasActiveFilter ? Icons.search_off : Icons.pets,
-                            size: 64,
-                            color: AppColors.textSecondary.withValues(alpha: 0.3),
-                          ),
-                          const SizedBox(height: 16),
-                          Text(
-                            hasActiveFilter
-                                ? 'Nenhum pet encontrado para esta busca.'
-                                : 'Nenhum pet cadastrado ainda.',
-                            style: GoogleFonts.roboto(
-                              fontSize: 16,
-                              color: AppColors.textSecondary,
-                            ),
-                            textAlign: TextAlign.center,
-                          ),
-                        ],
-                      ),
-                    ),
-                  )
-                else
-                  ListView.builder(
-                    shrinkWrap: true,
-                    physics: const NeverScrollableScrollPhysics(),
-                    itemCount: pets.length,
-                    itemBuilder: (context, index) {
-                      final pet = pets[index];
-                      return PetCard(pet: pet,
-                      );
-                    },
+                Selector<PetController, ({List<PetModel> pets, bool isLoading, bool hasActiveFilter})>(
+                  selector: (_, controller) => (
+                    pets: controller.feedPets,
+                    isLoading: controller.isLoading,
+                    hasActiveFilter: controller.searchQuery.isNotEmpty || controller.selectedCategory != 'Todos',
                   ),
+                  builder: (context, state, _) {
+                    final pets = state.pets;
+                    final isLoading = state.isLoading;
+                    final hasActiveFilter = state.hasActiveFilter;
+
+                    if (isLoading && pets.isEmpty) { // Apenas mostra loading em tela cheia na primeira carga
+                      return const Padding(
+                        padding: EdgeInsets.all(64.0),
+                        child: Center(child: CircularProgressIndicator(color: AppColors.primary)),
+                      );
+                    } else if (pets.isEmpty) {
+                      return Padding(
+                        padding: const EdgeInsets.all(48.0),
+                        child: Center(
+                          child: Column(
+                            children: [
+                              Icon(
+                                hasActiveFilter ? Icons.search_off : Icons.pets,
+                                size: 64,
+                                color: AppColors.textSecondary.withValues(alpha: 0.3),
+                              ),
+                              const SizedBox(height: 16),
+                              Text(
+                                hasActiveFilter
+                                    ? 'Nenhum pet encontrado para esta busca.'
+                                    : 'Nenhum pet cadastrado ainda.',
+                                style: GoogleFonts.roboto(
+                                  fontSize: 16,
+                                  color: AppColors.textSecondary,
+                                ),
+                                textAlign: TextAlign.center,
+                              ),
+                            ],
+                          ),
+                        ),
+                      );
+                    } else {
+                      return ListView.builder(
+                        shrinkWrap: true,
+                        physics: const NeverScrollableScrollPhysics(),
+                        itemCount: pets.length,
+                        itemBuilder: (context, index) {
+                          final pet = pets[index];
+                          return PetCard(pet: pet);
+                        },
+                      );
+                    }
+                  },
+                ),
                 const SizedBox(height: 40), // Espaço extra para scroll do FAB/BottomBar
               ],
             ),
           ),
         ),
       ),
-      // Custom BottomAppBar matching layout
-      bottomNavigationBar: const CustomBottomAppBar(currentIndex: 0),
     );
   }
 }

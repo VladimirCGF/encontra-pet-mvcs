@@ -3,7 +3,7 @@ import 'package:provider/provider.dart';
 import 'package:encontrapet/controller/auth_controller.dart';
 import 'package:encontrapet/view/theme/app_colors.dart';
 import 'package:encontrapet/view/auth/login_page.dart';
-import 'package:encontrapet/view/home/home_screen.dart';
+import 'package:encontrapet/view/main_shell.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 class AuthWrapper extends StatefulWidget {
@@ -36,7 +36,7 @@ class _AuthWrapperState extends State<AuthWrapper> {
       // Redireciona para a Home limpando a pilha de telas
       Navigator.pushReplacement(
         context,
-        MaterialPageRoute(builder: (context) => const HomeScreen()),
+        MaterialPageRoute(builder: (context) => const MainShell()),
       );
     } else {
       // Redireciona para o Login limpando a pilha de telas

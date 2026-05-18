@@ -5,7 +5,7 @@ import 'package:encontrapet/view/theme/app_colors.dart';
 import 'package:encontrapet/view/widgets/custom_button.dart';
 import 'package:encontrapet/view/widgets/custom_text_field.dart';
 import 'package:encontrapet/view/auth/signup_page.dart';
-import 'package:encontrapet/view/home/home_screen.dart';
+import 'package:encontrapet/view/main_shell.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 class LoginPage extends StatefulWidget {
@@ -47,7 +47,7 @@ class _LoginPageState extends State<LoginPage> {
       // Login bem sucedido! Vai para a tela inicial limpando a pilha de telas
       Navigator.pushReplacement(
         context,
-        MaterialPageRoute(builder: (context) => const HomeScreen()),
+        MaterialPageRoute(builder: (context) => const MainShell()),
       );
     } else {
       // Exibe erro retornado do Supabase (ex: e-mail inválido, senha incorreta)

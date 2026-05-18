@@ -10,23 +10,31 @@ class PetController extends ChangeNotifier {
   bool _isLoading = false;
   String _searchQuery = '';
   String _selectedCategory = 'Todos';
+  List<PetModel>? _cachedFeedPets;
 
-  // Setters reativos para busca e filtro
+  // Setters reativos para busca e filtro (invalidam o cache)
   set searchQuery(String value) {
     _searchQuery = value;
+    _cachedFeedPets = null;
     notifyListeners();
   }
 
   set selectedCategory(String value) {
     _selectedCategory = value;
+    _cachedFeedPets = null;
     notifyListeners();
   }
 
   String get searchQuery => _searchQuery;
   String get selectedCategory => _selectedCategory;
 
-  // Feed filtrado por categoria e busca textual (em memória, latência zero)
+  // Feed filtrado por categoria e busca textual (cacheado em memória)
   List<PetModel> get feedPets {
+    _cachedFeedPets ??= _computeFeedPets();
+    return _cachedFeedPets!;
+  }
+
+  List<PetModel> _computeFeedPets() {
     List<PetModel> filtered = _allPets;
 
     // 1. Filtro por categoria
@@ -70,10 +78,11 @@ class PetController extends ChangeNotifier {
 
   Future<void> fetchAllPets() async {
     _isLoading = true;
-    notifyListeners(); // Avisa a View para mostrar o skeleton ou loading
+    notifyListeners();
 
     try {
       _allPets = await _petService.getAllPets();
+      _cachedFeedPets = null; // Invalida o cache ao recarregar
     } catch (e) {
       debugPrint('Erro ao carregar pets: $e');
     } finally {
@@ -87,9 +96,9 @@ class PetController extends ChangeNotifier {
     notifyListeners();
 
     try {
-      // O Service salva no SQLite imediatamente e já marca para tentar o sync!
       final newPet = await _petService.createPet(pet);
       _allPets.add(newPet);
+      _cachedFeedPets = null; // Invalida o cache
     } catch (e) {
       debugPrint('Erro ao adicionar pet: $e');
     } finally {
@@ -104,7 +113,8 @@ class PetController extends ChangeNotifier {
       final index = _allPets.indexWhere((p) => p.id == updatedPet.id);
       if (index != -1) {
         _allPets[index] = updatedPet;
-        notifyListeners(); // Atualiza a tela com o pet modificado imediatamente
+        _cachedFeedPets = null; // Invalida o cache
+        notifyListeners();
       }
     } catch (e) {
       debugPrint('Erro ao editar: $e');
@@ -115,7 +125,8 @@ class PetController extends ChangeNotifier {
     try {
       await _petService.deletePet(id);
       _allPets.removeWhere((p) => p.id == id);
-      notifyListeners(); // Remove o pet da tela instantaneamente
+      _cachedFeedPets = null; // Invalida o cache
+      notifyListeners();
     } catch (e) {
       debugPrint('Erro ao deletar: $e');
     }
