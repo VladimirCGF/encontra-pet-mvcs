@@ -12,7 +12,9 @@ class MyPetsScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final mockMyPets = context.watch<PetController>().myPets;
+    final petController = context.watch<PetController>();
+    final myPets = petController.myPets;
+    final isLoading = petController.isLoading;
 
     return Scaffold(
       backgroundColor: AppColors.background,
@@ -46,7 +48,7 @@ class MyPetsScreen extends StatelessWidget {
                   ),
                   const SizedBox(height: 4),
                   Text(
-                    'Você tem ${mockMyPets.length} pets cadastrados.',
+                    'Você tem ${myPets.length} pets cadastrados.',
                     style: GoogleFonts.roboto(
                       fontSize: 14,
                       color: AppColors.textSecondary,
@@ -58,21 +60,25 @@ class MyPetsScreen extends StatelessWidget {
 
             // Pet list
             Expanded(
-              child: ListView.builder(
-                padding: const EdgeInsets.fromLTRB(20, 12, 20, 20),
-                itemCount: mockMyPets.length,
-                itemBuilder: (context, index) {
-                  final pet = mockMyPets[index];
-                  return MyPetCard(
-                    name: pet.name,
-                    breed: pet.breed,
-                    age: pet.date, // reusing date for age temporarily based on mock data
-                    location: pet.location,
-                    imageUrl: pet.imageUrl,
-                    isLost: pet.isLost,
-                  );
-                },
-              ),
+              child: isLoading
+                  ? const Center(child: CircularProgressIndicator(color: AppColors.primary))
+                  : myPets.isEmpty
+                      ? const Center(child: Text('Nenhum pet cadastrado.'))
+                      : ListView.builder(
+                          padding: const EdgeInsets.fromLTRB(20, 12, 20, 20),
+                          itemCount: myPets.length,
+                          itemBuilder: (context, index) {
+                            final pet = myPets[index];
+                            return MyPetCard(
+                              name: pet.name,
+                              breed: pet.breed,
+                              age: pet.date,
+                              location: pet.location,
+                              imageUrl: pet.imageUrl,
+                              isLost: pet.isLost,
+                            );
+                          },
+                        ),
             ),
           ],
         ),

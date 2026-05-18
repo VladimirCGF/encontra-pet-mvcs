@@ -14,7 +14,9 @@ class HomeScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final mockPets = context.watch<PetController>().feedPets;
+    final petController = context.watch<PetController>();
+    final pets = petController.feedPets;
+    final isLoading = petController.isLoading;
 
     return Scaffold(
       backgroundColor: AppColors.background,
@@ -37,22 +39,33 @@ class HomeScreen extends StatelessWidget {
               const PetListSection(),
               
               // 5. Vertical list of Pet Cards
-              ListView.builder(
-                shrinkWrap: true,
-                physics: const NeverScrollableScrollPhysics(),
-                itemCount: mockPets.length,
-                itemBuilder: (context, index) {
-                  final pet = mockPets[index];
-                  return PetCard(
-                    name: pet.name,
-                    breed: pet.breed,
-                    imageUrl: pet.imageUrl,
-                    location: pet.location,
-                    date: pet.date,
-                    isLost: pet.isLost,
-                  );
-                },
-              ),
+              if (isLoading)
+                const Padding(
+                  padding: EdgeInsets.all(32.0),
+                  child: Center(child: CircularProgressIndicator(color: AppColors.primary)),
+                )
+              else if (pets.isEmpty)
+                const Padding(
+                  padding: EdgeInsets.all(32.0),
+                  child: Center(child: Text('Nenhum pet encontrado.')),
+                )
+              else
+                ListView.builder(
+                  shrinkWrap: true,
+                  physics: const NeverScrollableScrollPhysics(),
+                  itemCount: pets.length,
+                  itemBuilder: (context, index) {
+                    final pet = pets[index];
+                    return PetCard(
+                      name: pet.name,
+                      breed: pet.breed,
+                      imageUrl: pet.imageUrl,
+                      location: pet.location,
+                      date: pet.date,
+                      isLost: pet.isLost,
+                    );
+                  },
+                ),
               const SizedBox(height: 40), // Espaço extra para scroll do FAB/BottomBar
             ],
           ),

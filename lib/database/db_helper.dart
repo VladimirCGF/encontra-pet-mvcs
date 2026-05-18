@@ -23,8 +23,9 @@ class DatabaseHelper {
 
     return await openDatabase(
       path,
-      version: 1,
+      version: 3,
       onCreate: _onCreate,
+      onUpgrade: _onUpgrade,
     );
   }
 
@@ -38,7 +39,8 @@ class DatabaseHelper {
         imageUrl TEXT,
         location TEXT,
         date TEXT,
-        isLost INTEGER
+        isLost INTEGER,
+        sync_status TEXT
       )
     ''');
 
@@ -48,8 +50,18 @@ class DatabaseHelper {
         id TEXT PRIMARY KEY,
         name TEXT,
         email TEXT,
-        phone TEXT
+        phone TEXT,
+        sync_status TEXT
       )
     ''');
+  }
+
+  Future<void> _onUpgrade(Database db, int oldVersion, int newVersion) async {
+    if (oldVersion < 2) {
+      await db.execute('ALTER TABLE pets ADD COLUMN sync_status TEXT DEFAULT "synced"');
+    }
+    if (oldVersion < 3) {
+      await db.execute('ALTER TABLE users ADD COLUMN sync_status TEXT DEFAULT "synced"');
+    }
   }
 }

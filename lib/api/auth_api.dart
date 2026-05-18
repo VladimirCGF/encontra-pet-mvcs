@@ -41,4 +41,16 @@ class AuthApi {
   Future<void> signOut() async {
     await _client.auth.signOut();
   }
+
+  /// Atualiza o nome e o telefone (contato) do usuário logado no Supabase Auth
+  Future<void> updateProfile(String name, String phone) async {
+    await _client.auth.updateUser(
+      UserAttributes(
+        data: {
+          'name': name,
+          'phone': phone,
+        },
+      ),
+    );
+  }
 }

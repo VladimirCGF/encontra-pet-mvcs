@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'package:encontrapet/controller/auth_controller.dart';
 import 'package:encontrapet/view/theme/app_colors.dart';
 import 'package:google_fonts/google_fonts.dart';
 
@@ -7,6 +9,14 @@ class ProfileHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final authController = context.watch<AuthController>();
+    final user = authController.currentUser;
+
+    final name = user?.name ?? 'Usuário';
+    final email = user?.email ?? '';
+    final phone = (user?.phone == null || user!.phone!.isEmpty) ? 'Sem telefone cadastrado' : user.phone;
+    final isPending = user?.syncStatus == 'pending_update';
+
     return Container(
       width: double.infinity,
       color: AppColors.primary,
@@ -29,7 +39,7 @@ class ProfileHeader extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 24),
-          
+
           // User Info Column (Centered)
           Center(
             child: Column(
@@ -40,29 +50,56 @@ class ProfileHeader extends StatelessWidget {
                   height: 96,
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
-                    image: const DecorationImage(
-                      image: NetworkImage('https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?auto=format&fit=crop&q=80&w=200'),
-                      fit: BoxFit.cover,
-                    ),
+                    color: Colors.grey[300],
                     border: Border.all(
-                      color: Colors.white.withValues(alpha: 0.2),
-                      width: 3.0,
+                      color: Colors.white,
+                      width: 2.0,
+                    ),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withValues(alpha: 0.05),
+                        blurRadius: 8,
+                        offset: const Offset(0, 4),
+                      ),
+                    ],
+                  ),
+                  child: Center(
+                    child: Icon(
+                      Icons.person,
+                      size: 64,
+                      color: Colors.grey[600],
                     ),
                   ),
                 ),
                 const SizedBox(height: 16),
-                
-                // Name
-                Text(
-                  'Vladimir Silva',
-                  style: GoogleFonts.roboto(
-                    color: Colors.white,
-                    fontSize: 22,
-                    fontWeight: FontWeight.bold,
-                  ),
+
+                // Name + Offline Sync Status Indicator
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Text(
+                      name,
+                      style: GoogleFonts.roboto(
+                        color: Colors.white,
+                        fontSize: 22,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    if (isPending) ...[
+                      const SizedBox(width: 8),
+                      const Tooltip(
+                        message: 'Alterações salvas offline. Sincronizando quando houver conexão...',
+                        child: Icon(
+                          Icons.cloud_off_rounded,
+                          color: Colors.white70,
+                          size: 20,
+                        ),
+                      ),
+                    ]
+                  ],
                 ),
                 const SizedBox(height: 8),
-                
+
                 // Email
                 Row(
                   mainAxisSize: MainAxisSize.min,
@@ -74,7 +111,7 @@ class ProfileHeader extends StatelessWidget {
                     ),
                     const SizedBox(width: 8),
                     Text(
-                      'vladimir@petfinder.app',
+                      email,
                       style: GoogleFonts.roboto(
                         color: Colors.white70,
                         fontSize: 14,
@@ -83,7 +120,7 @@ class ProfileHeader extends StatelessWidget {
                   ],
                 ),
                 const SizedBox(height: 4),
-                
+
                 // Phone
                 Row(
                   mainAxisSize: MainAxisSize.min,
@@ -95,7 +132,7 @@ class ProfileHeader extends StatelessWidget {
                     ),
                     const SizedBox(width: 8),
                     Text(
-                      '(11) 99999-9999',
+                      phone!,
                       style: GoogleFonts.roboto(
                         color: Colors.white70,
                         fontSize: 14,

@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'package:encontrapet/controller/auth_controller.dart';
 import 'package:encontrapet/view/theme/app_colors.dart';
 import 'package:encontrapet/view/widgets/custom_button.dart';
 import 'package:encontrapet/view/widgets/custom_text_field.dart';
@@ -6,11 +8,59 @@ import 'package:encontrapet/view/auth/signup_page.dart';
 import 'package:encontrapet/view/home/home_screen.dart';
 import 'package:google_fonts/google_fonts.dart';
 
-class LoginPage extends StatelessWidget {
+class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
 
   @override
+  State<LoginPage> createState() => _LoginPageState();
+}
+
+class _LoginPageState extends State<LoginPage> {
+  final _emailController = TextEditingController();
+  final _passwordController = TextEditingController();
+  bool _keepLoggedIn = true;
+
+  @override
+  void dispose() {
+    _emailController.dispose();
+    _passwordController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _handleLogin() async {
+    final email = _emailController.text.trim();
+    final password = _passwordController.text;
+
+    if (email.isEmpty || password.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Preencha o e-mail e a senha!')),
+      );
+      return;
+    }
+
+    final authController = Provider.of<AuthController>(context, listen: false);
+    final success = await authController.login(email, password, _keepLoggedIn);
+
+    if (!mounted) return;
+
+    if (success) {
+      // Login bem sucedido! Vai para a tela inicial limpando a pilha de telas
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (context) => const HomeScreen()),
+      );
+    } else {
+      // Exibe erro retornado do Supabase (ex: e-mail inválido, senha incorreta)
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(authController.errorMessage ?? 'Falha ao autenticar.')),
+      );
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
+    final isLoading = context.watch<AuthController>().isLoading;
+
     return Scaffold(
       backgroundColor: AppColors.background,
       body: SafeArea(
@@ -53,39 +103,67 @@ class LoginPage extends StatelessWidget {
                 ),
               ),
               const SizedBox(height: 48),
-              const CustomTextField(
+              CustomTextField(
                 label: 'E-mail',
                 prefixIcon: Icons.email_outlined,
                 keyboardType: TextInputType.emailAddress,
+                controller: _emailController,
               ),
-              const CustomTextField(
+              CustomTextField(
                 label: 'Senha',
                 prefixIcon: Icons.lock_outline_rounded,
                 isPassword: true,
+                controller: _passwordController,
               ),
-              Align(
-                alignment: Alignment.centerRight,
-                child: TextButton(
-                  onPressed: () {},
-                  child: Text(
-                    'Esqueceu a senha?',
-                    style: GoogleFonts.roboto(
-                      color: AppColors.primary,
-                      fontWeight: FontWeight.w600,
+              const SizedBox(height: 8),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Row(
+                    children: [
+                      SizedBox(
+                        width: 24,
+                        height: 24,
+                        child: Checkbox(
+                          value: _keepLoggedIn,
+                          activeColor: AppColors.primary,
+                          onChanged: (value) {
+                            setState(() {
+                              _keepLoggedIn = value ?? false;
+                            });
+                          },
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      Text(
+                        'Manter conectado',
+                        style: GoogleFonts.roboto(
+                          color: AppColors.textSecondary,
+                          fontSize: 14,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ],
+                  ),
+                  TextButton(
+                    onPressed: () {},
+                    child: Text(
+                      'Esqueceu a senha?',
+                      style: GoogleFonts.roboto(
+                        color: AppColors.primary,
+                        fontWeight: FontWeight.w600,
+                      ),
                     ),
                   ),
-                ),
+                ],
               ),
               const SizedBox(height: 24),
-              CustomButton(
-                text: 'Entrar',
-                onPressed: () {
-                  Navigator.pushReplacement(
-                    context,
-                    MaterialPageRoute(builder: (context) => const HomeScreen()),
-                  );
-                },
-              ),
+              isLoading 
+                  ? const Center(child: CircularProgressIndicator(color: AppColors.primary))
+                  : CustomButton(
+                      text: 'Entrar',
+                      onPressed: _handleLogin,
+                    ),
               const SizedBox(height: 32),
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,

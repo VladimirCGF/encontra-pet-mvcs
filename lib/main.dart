@@ -1,4 +1,4 @@
-import 'package:encontrapet/view/auth/login_page.dart';
+import 'package:encontrapet/view/auth/auth_wrapper.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
@@ -41,7 +41,7 @@ class MyApp extends StatelessWidget {
         useMaterial3: true,
         textTheme: GoogleFonts.robotoTextTheme(),
       ),
-      home: const LoginPage(),
+      home: const AuthWrapper(),
     );
   }
 }

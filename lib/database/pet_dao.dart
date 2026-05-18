@@ -33,6 +33,16 @@ class PetDao {
     );
   }
 
+  Future<List<PetModel>> getPendingPets() async {
+    final db = await _dbHelper.database;
+    final List<Map<String, dynamic>> maps = await db.query(
+      'pets',
+      where: 'sync_status != ?',
+      whereArgs: ['synced'],
+    );
+    return List.generate(maps.length, (i) => PetModel.fromMap(maps[i]));
+  }
+
   Future<void> deletePet(String id) async {
     final db = await _dbHelper.database;
     await db.delete(

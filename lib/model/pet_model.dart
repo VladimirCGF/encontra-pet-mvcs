@@ -6,6 +6,7 @@ class PetModel {
   final String location;
   final String date;
   final bool isLost;
+  final String syncStatus;
 
   PetModel({
     this.id,
@@ -15,6 +16,7 @@ class PetModel {
     required this.location,
     required this.date,
     required this.isLost,
+    this.syncStatus = 'synced',
   });
 
   factory PetModel.fromMap(Map<String, dynamic> map) {
@@ -26,6 +28,7 @@ class PetModel {
       location: map['location'] as String,
       date: map['date'] as String,
       isLost: map['isLost'] == 1 || map['isLost'] == true,
+      syncStatus: map['sync_status'] as String? ?? 'synced',
     );
   }
 
@@ -38,6 +41,7 @@ class PetModel {
       'location': location,
       'date': date,
       'isLost': isLost ? 1 : 0, // SQLite compatibility
+      'sync_status': syncStatus,
     };
   }
 }

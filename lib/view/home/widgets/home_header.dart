@@ -1,12 +1,23 @@
 import 'package:flutter/material.dart';
 import 'package:encontrapet/view/theme/app_colors.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:provider/provider.dart';
+
+import '../../../controller/auth_controller.dart';
 
 class HomeHeader extends StatelessWidget {
   const HomeHeader({super.key});
 
   @override
   Widget build(BuildContext context) {
+    final authController = context.watch<AuthController>();
+    final user = authController.currentUser;
+
+    final name = user?.name ?? 'Usuário';
+    final email = user?.email ?? '';
+    final phone = (user?.phone == null || user!.phone!.isEmpty) ? 'Sem telefone cadastrado' : user.phone;
+    final isPending = user?.syncStatus == 'pending_update';
+
     return SafeArea(
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 16.0),
@@ -22,10 +33,7 @@ class HomeHeader extends StatelessWidget {
                   height: 48,
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
-                    image: const DecorationImage(
-                      image: NetworkImage('https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?auto=format&fit=crop&q=80&w=120'),
-                      fit: BoxFit.cover,
-                    ),
+                    color: Colors.grey[300], // Cor de fundo do círculo cinza claro
                     border: Border.all(
                       color: Colors.white,
                       width: 2.0,
@@ -37,6 +45,13 @@ class HomeHeader extends StatelessWidget {
                         offset: const Offset(0, 4),
                       ),
                     ],
+                  ),
+                  child: Center(
+                    child: Icon(
+                      Icons.person,            // Ícone da silhueta cinza escura
+                      size: 32,                // Proporcional ao tamanho de 48 do Container
+                      color: Colors.grey[600], // Cor da silhueta
+                    ),
                   ),
                 ),
                 const SizedBox(width: 12),
@@ -53,7 +68,7 @@ class HomeHeader extends StatelessWidget {
                       ),
                     ),
                     Text(
-                      'Vladimir',
+                      name,
                       style: GoogleFonts.roboto(
                         fontSize: 18,
                         fontWeight: FontWeight.bold,

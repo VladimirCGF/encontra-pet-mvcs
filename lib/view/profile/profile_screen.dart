@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:encontrapet/view/theme/app_colors.dart';
 import 'package:encontrapet/view/auth/login_page.dart';
+import 'package:encontrapet/view/profile/edit_profile_screen.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../widgets/custom_bottom_app_bar.dart';
 import 'widgets/profile_header.dart';
@@ -59,8 +60,13 @@ class ProfileScreen extends StatelessWidget {
                     ProfileMenuItem(
                       icon: Icons.person_outline_rounded,
                       title: 'Editar perfil',
-                      subtitle: 'Nome, foto, contato',
-                      onTap: () {},
+                      subtitle: 'Nome, contato',
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(builder: (context) => const EditProfileScreen()),
+                        );
+                      },
                     ),
                     ProfileMenuItem(
                       icon: Icons.lock_outline_rounded,

@@ -27,4 +27,20 @@ class UserDao {
     }
     return null;
   }
+
+  /// Recupera o usuário local com modificações de perfil pendentes de sincronização
+  Future<UserModel?> getPendingUser() async {
+    final db = await _dbHelper.database;
+    final List<Map<String, dynamic>> maps = await db.query(
+      'users',
+      where: 'sync_status = ?',
+      whereArgs: ['pending_update'],
+      limit: 1,
+    );
+
+    if (maps.isNotEmpty) {
+      return UserModel.fromMap(maps.first);
+    }
+    return null;
+  }
 }

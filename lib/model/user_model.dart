@@ -3,12 +3,14 @@ class UserModel {
   final String name;
   final String email;
   final String? phone;
+  final String syncStatus;
 
   UserModel({
     this.id,
     required this.name,
     required this.email,
     this.phone,
+    this.syncStatus = 'synced',
   });
 
   factory UserModel.fromMap(Map<String, dynamic> map) {
@@ -17,6 +19,7 @@ class UserModel {
       name: map['name'] as String,
       email: map['email'] as String,
       phone: map['phone'] as String?,
+      syncStatus: map['sync_status'] as String? ?? 'synced',
     );
   }
 
@@ -26,6 +29,7 @@ class UserModel {
       'name': name,
       'email': email,
       'phone': phone,
+      'sync_status': syncStatus,
     };
   }
 }
