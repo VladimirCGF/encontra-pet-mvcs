@@ -5,23 +5,34 @@ import '../model/user_model.dart';
 class AuthApi {
   final SupabaseClient _client = Supabase.instance.client;
 
-  Future<UserModel?> signUp(String email, String password, String name) async {
-    debugPrint('➡️ [Supabase Auth] Iniciando signUp para: $email');
-    final response = await _client.auth.signUp(
-      email: email,
-      password: password,
-      data: {'name': name},
-    );
+  Future<UserModel?> signUp(String email, String password, String name, String phone) async {
+    try {
+      debugPrint('➡️ [Supabase Auth] Iniciando signUp para: $email');
 
-    if (response.user != null) {
-      debugPrint('✅ [Supabase Auth] signUp concluído! UID: ${response.user!.id}');
-      return UserModel(
-        id: response.user!.id,
-        name: name,
+      final response = await _client.auth.signUp(
         email: email,
+        password: password,
+        data: {
+          'name': name,
+          'phone': phone,
+        },
       );
+
+      if (response.user != null) {
+        debugPrint('✅ [Supabase Auth] signUp concluído! UID: ${response.user!.id}');
+        return UserModel(
+          id: response.user!.id,
+          name: name,
+          email: email,
+          phone: phone,
+        );
+      }
+      return null;
+    } catch (e) {
+      // Captura o erro real para você ver no console do VS Code / Android Studio
+      debugPrint('❌ [Supabase Auth] Erro no signUp: $e');
+      return null;
     }
-    return null;
   }
 
   Future<UserModel?> signIn(String email, String password) async {
@@ -38,6 +49,7 @@ class AuthApi {
         id: response.user!.id,
         name: name,
         email: email,
+
       );
     }
     return null;

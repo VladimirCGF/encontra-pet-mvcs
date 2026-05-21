@@ -1,3 +1,4 @@
+import 'package:flutter/cupertino.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:path/path.dart';
 
@@ -66,6 +67,14 @@ class DatabaseHelper {
     }
     if (oldVersion < 4) {
       await db.execute('ALTER TABLE pets ADD COLUMN user_id TEXT');
+
+      // 🛠️ ADICIONE ESTA LINHA: Garante que aparelhos antigos recebam a coluna phone na migração
+      try {
+        await db.execute('ALTER TABLE users ADD COLUMN phone TEXT');
+      } catch (e) {
+        // Evita crash caso a coluna de alguma forma já exista
+        debugPrint('Coluna phone já existente ou erro na migração: $e');
+      }
     }
   }
 }

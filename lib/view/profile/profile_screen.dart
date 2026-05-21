@@ -20,7 +20,6 @@ class ProfileScreen extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // 1. Stack: Header + Overlapping Stats Card
               Stack(
                 clipBehavior: Clip.none,
                 children: const [

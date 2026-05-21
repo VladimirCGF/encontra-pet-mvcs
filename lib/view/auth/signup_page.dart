@@ -1,3 +1,5 @@
+import 'package:easy_mask/easy_mask.dart';
+import 'package:encontrapet/utils/brazilian_phone_input_formatter.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:encontrapet/controller/auth_controller.dart';
@@ -16,6 +18,7 @@ class SignupPage extends StatefulWidget {
 class _SignupPageState extends State<SignupPage> {
   final _nameController = TextEditingController();
   final _emailController = TextEditingController();
+  final _phoneController = TextEditingController();
   final _passwordController = TextEditingController();
   final _confirmPasswordController = TextEditingController();
 
@@ -23,6 +26,7 @@ class _SignupPageState extends State<SignupPage> {
   void dispose() {
     _nameController.dispose();
     _emailController.dispose();
+    _phoneController.dispose();
     _passwordController.dispose();
     _confirmPasswordController.dispose();
     super.dispose();
@@ -31,6 +35,7 @@ class _SignupPageState extends State<SignupPage> {
   Future<void> _handleSignup() async {
     final name = _nameController.text.trim();
     final email = _emailController.text.trim();
+    final phone = _phoneController.text.replaceAll(RegExp(r'\D'), '');
     final password = _passwordController.text;
     final confirmPassword = _confirmPasswordController.text;
 
@@ -43,7 +48,8 @@ class _SignupPageState extends State<SignupPage> {
     }
 
     // Validação de formato de E-mail
-    final emailRegex = RegExp(r"^[a-zA-Z0-9.a-zA-Z0-9.!#$%&'*+-/=?^_`{|}~]+@[a-zA-Z0-9]+\.[a-zA-Z]+");
+    final emailRegex = RegExp(
+        r"^[a-zA-Z0-9.a-zA-Z0-9.!#$%&'*+-/=?^_`{|}~]+@[a-zA-Z0-9]+\.[a-zA-Z]+");
     if (!emailRegex.hasMatch(email)) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Digite um e-mail válido.')),
@@ -54,7 +60,8 @@ class _SignupPageState extends State<SignupPage> {
     // Validação do tamanho da senha
     if (password.length < 8) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('A senha deve ter no mínimo 8 caracteres.')),
+        const SnackBar(
+            content: Text('A senha deve ter no mínimo 8 caracteres.')),
       );
       return;
     }
@@ -68,9 +75,9 @@ class _SignupPageState extends State<SignupPage> {
 
     // Usando Provider para acessar o controller
     final authController = Provider.of<AuthController>(context, listen: false);
-    
+
     // Tenta fazer o cadastro real no Supabase
-    final success = await authController.signUp(email, password, name);
+    final success = await authController.signUp(email, password, name, phone);
 
     // Certifica-se de que a tela ainda está montada antes de mostrar notificações/navegar
     if (!mounted) return;
@@ -79,14 +86,13 @@ class _SignupPageState extends State<SignupPage> {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Cadastro realizado com sucesso!')),
       );
-      // Como a navegação do EncontraPet geralmente abre a home após o login/signup,
-      // podemos simplesmente voltar para a tela de Login ou empurrar a Home.
-      // Aqui, vamos voltar para o Login page para ele entrar com as credenciais.
-      Navigator.pop(context); 
+
+      Navigator.pop(context);
     } else {
       // Mostra o erro retornado pelo Controller
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(authController.errorMessage ?? 'Erro desconhecido ao cadastrar.')),
+        SnackBar(content: Text(
+            authController.errorMessage ?? 'Erro desconhecido ao cadastrar.')),
       );
     }
   }
@@ -94,7 +100,9 @@ class _SignupPageState extends State<SignupPage> {
   @override
   Widget build(BuildContext context) {
     // Escuta o AuthController para saber se deve exibir o loading
-    final isLoading = context.watch<AuthController>().isLoading;
+    final isLoading = context
+        .watch<AuthController>()
+        .isLoading;
 
     return Scaffold(
       backgroundColor: AppColors.background,
@@ -102,7 +110,8 @@ class _SignupPageState extends State<SignupPage> {
         backgroundColor: Colors.transparent,
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios_new_rounded, color: AppColors.textPrimary),
+          icon: const Icon(
+              Icons.arrow_back_ios_new_rounded, color: AppColors.textPrimary),
           onPressed: () => Navigator.pop(context),
         ),
       ),
@@ -143,6 +152,15 @@ class _SignupPageState extends State<SignupPage> {
                 controller: _emailController,
               ),
               CustomTextField(
+                label: 'Contato',
+                prefixIcon: Icons.phone,
+                keyboardType: TextInputType.phone,
+                controller: _phoneController,
+                inputFormatters: [
+                  TextInputMask(mask: ['(99) 9999-9999', '(99) 99999-9999'])
+                ],
+              ),
+              CustomTextField(
                 label: 'Senha',
                 prefixIcon: Icons.lock_outline_rounded,
                 isPassword: true,
@@ -156,12 +174,13 @@ class _SignupPageState extends State<SignupPage> {
               ),
               const SizedBox(height: 32),
               // Substitui o botão por um Loading se estiver carregando
-              isLoading 
-                  ? const Center(child: CircularProgressIndicator(color: AppColors.primary))
+              isLoading
+                  ? const Center(
+                  child: CircularProgressIndicator(color: AppColors.primary))
                   : CustomButton(
-                      text: 'Cadastrar',
-                      onPressed: _handleSignup,
-                    ),
+                text: 'Cadastrar',
+                onPressed: _handleSignup,
+              ),
               const SizedBox(height: 32),
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,

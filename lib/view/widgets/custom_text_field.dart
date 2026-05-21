@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:encontrapet/view/theme/app_colors.dart';
+import 'package:flutter/src/services/text_formatter.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 class CustomTextField extends StatefulWidget {
@@ -8,6 +9,7 @@ class CustomTextField extends StatefulWidget {
   final bool isPassword;
   final TextEditingController? controller;
   final TextInputType? keyboardType;
+  final List<TextInputFormatter>? inputFormatters;
 
   const CustomTextField({
     super.key,
@@ -16,6 +18,7 @@ class CustomTextField extends StatefulWidget {
     this.isPassword = false,
     this.controller,
     this.keyboardType,
+    this.inputFormatters,
   });
 
   @override
@@ -44,6 +47,7 @@ class _CustomTextFieldState extends State<CustomTextField> {
         controller: widget.controller,
         obscureText: widget.isPassword ? _obscureText : false,
         keyboardType: widget.keyboardType,
+        inputFormatters: widget.inputFormatters,
         style: GoogleFonts.roboto(
           color: AppColors.textPrimary,
           fontSize: 16,

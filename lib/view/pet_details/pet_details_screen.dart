@@ -39,7 +39,7 @@ class PetDetailsScreen extends StatelessWidget {
                               top: Radius.circular(20),
                             ),
                             child: Hero(
-                              tag: 'pet_image_${pet.id ?? pet.hashCode}',
+                              tag: 'pet_image_${pet.id}_list',
                               child: isNetworkImage
                                   ? Image.network(pet.imageUrl, fit: BoxFit.cover, height: 350, width: double.infinity)
                                   : Image.file(

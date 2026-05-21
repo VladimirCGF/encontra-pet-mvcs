@@ -47,7 +47,7 @@ class AuthController extends ChangeNotifier {
   }
 
   // Método de Cadastro (SignUp) estritamente ONLINE
-  Future<bool> signUp(String email, String password, String name) async {
+  Future<bool> signUp(String email, String password, String name, String phone) async {
     if (!await _hasInternetConnection()) {
       _errorMessage = 'Sem conexão! Conecte-se para criar sua conta.';
       notifyListeners();
@@ -59,7 +59,7 @@ class AuthController extends ChangeNotifier {
     notifyListeners();
 
     try {
-      final user = await _authApi.signUp(email, password, name);
+      final user = await _authApi.signUp(email, password, name, phone);
       if (user != null) {
         await _userService.saveLocalProfile(user); // Salva a cópia no SQLite
         _currentUser = user;
@@ -106,7 +106,7 @@ class AuthController extends ChangeNotifier {
     try {
       final user = await _authApi.signIn(email, password);
       if (user != null) {
-        await _userService.saveLocalProfile(user); // Atualiza SQLite com dados da nuvem
+        await _userService.saveLocalProfile(user);
         _currentUser = user;
 
         // Salva a preferência de "Manter conectado"

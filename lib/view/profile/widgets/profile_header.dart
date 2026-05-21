@@ -1,3 +1,4 @@
+import 'package:easy_mask/easy_mask.dart';
 import 'package:encontrapet/view/profile/widgets/user_avatar.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -25,7 +26,7 @@ class ProfileHeader extends StatelessWidget {
         top: 24.0,
         left: 20.0,
         right: 20.0,
-        bottom: 48.0, // Space for stats card overlap
+        bottom: 48.0,
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -108,7 +109,7 @@ class ProfileHeader extends StatelessWidget {
                     ),
                     const SizedBox(width: 8),
                     Text(
-                      phone!,
+                      MagicMask.buildMask(['(99) 9999-9999', '(99) 99999-9999']).getMaskedString(phone!),
                       style: GoogleFonts.roboto(
                         color: Colors.white70,
                         fontSize: 14,
@@ -124,3 +125,5 @@ class ProfileHeader extends StatelessWidget {
     );
   }
 }
+
+

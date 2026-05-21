@@ -1,3 +1,4 @@
+import 'package:easy_mask/easy_mask.dart';
 import 'package:encontrapet/view/profile/widgets/user_avatar.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -38,7 +39,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
 
   Future<void> _handleSave() async {
     final name = _nameController.text.trim();
-    final phone = _phoneController.text.trim();
+    final phone = _phoneController.text.replaceAll(RegExp(r'\D'), '');
 
     if (name.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -133,9 +134,12 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
               const SizedBox(height: 8),
               CustomTextField(
                 label: 'Contato',
-                prefixIcon: Icons.phone_outlined,
+                prefixIcon: Icons.phone,
                 keyboardType: TextInputType.phone,
                 controller: _phoneController,
+                inputFormatters: [
+                  TextInputMask(mask: ['(99) 9999-9999', '(99) 99999-9999'])
+                ],
               ),
               const SizedBox(height: 40),
 

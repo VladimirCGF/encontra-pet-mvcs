@@ -71,7 +71,7 @@ class UserService {
           id: session.user.id,
           name: session.user.userMetadata?['name'] ?? 'Usuário',
           email: session.user.email ?? '',
-          phone: session.user.userMetadata?['phone'] as String?,
+          phone: session.user.userMetadata?['phone'] as String,
         );
       }
     }
