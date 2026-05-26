@@ -77,4 +77,34 @@ class UserService {
     }
     return null;
   }
+
+  /// Realiza o logout limpando a sessão remota e eliminando os dados locais do banco (Segurança Offline-First)
+  Future<void> logout() async {
+    try {
+      // 1. Encerra a sessão no Supabase e limpa o token armazenado no aparelho
+      await Supabase.instance.client.auth.signOut();
+
+      // 2. Apaga os dados do usuário do SQLite local por segurança
+      await _userDao.clearUserData();
+
+    } catch (e) {
+      rethrow;
+    }
+  }
+
+  /// Busca o telefone do anunciante de um pet com estratégia Cache Local → Supabase.
+  /// 
+  /// - Se o anunciante for o próprio usuário logado, resolve via SQLite (offline, instantâneo).
+  /// - Caso contrário, busca na tabela pública 'profiles' do Supabase.
+  /// - Retorna null se não encontrar ou em caso de erro.
+  Future<String?> getOwnerPhone(String userId) async {
+    // 1. Tenta o SQLite local primeiro (resolve pets próprios sem internet)
+    final localUser = await _userDao.getUser(userId);
+    if (localUser?.phone != null && localUser!.phone!.isNotEmpty) {
+      return localUser.phone;
+    }
+
+    // 2. Fallback: busca no Supabase (profiles table)
+    return await _authApi.getOwnerPhoneById(userId);
+  }
 }

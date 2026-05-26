@@ -1,3 +1,4 @@
+import 'package:flutter/cupertino.dart';
 import 'package:sqflite/sqflite.dart';
 import '../model/user_model.dart';
 import 'db_helper.dart';
@@ -48,4 +49,20 @@ class UserDao {
     }
     return null;
   }
+
+  Future<void> clearUserData() async {
+    try {
+      // 1. Obtém a instância do banco de dados através do seu _dbHelper interno
+      final db = await _dbHelper.database;
+
+      // 2. Deleta todas as linhas da tabela 'users'
+      await db.delete('users');
+
+      debugPrint('Sucesso: Dados locais do usuário foram limpos do SQLite.');
+    } catch (e) {
+      debugPrint('Erro ao limpar a tabela users no SQLite: $e');
+      rethrow;
+    }
+  }
+
 }

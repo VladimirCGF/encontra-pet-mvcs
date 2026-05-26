@@ -74,4 +74,29 @@ class AuthApi {
     );
     debugPrint('✅ [Supabase Auth] updateProfile concluído');
   }
+
+  /// Busca o telefone de um anunciante pelo userId consultando a tabela
+  /// pública 'users' do Supabase.
+  /// Retorna null silenciosamente em caso de erro ou dado ausente.
+  Future<String?> getOwnerPhoneById(String userId) async {
+    debugPrint('➡️ [Supabase Auth] Buscando phone do anunciante: $userId');
+    try {
+      final List<dynamic> data = await _client
+          .from('users')
+          .select('phone')
+          .eq('id', userId)
+          .limit(1);
+
+      if (data.isNotEmpty) {
+        final phone = data.first['phone'] as String?;
+        debugPrint('✅ [Supabase Auth] Phone do anunciante encontrado: $phone');
+        return (phone != null && phone.isNotEmpty) ? phone : null;
+      }
+      debugPrint('⚠️ [Supabase Auth] Nenhum usuário encontrado para userId: $userId');
+      return null;
+    } catch (e) {
+      debugPrint('❌ [Supabase Auth] Erro ao buscar phone do anunciante: $e');
+      return null;
+    }
+  }
 }

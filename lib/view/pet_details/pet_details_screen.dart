@@ -1,19 +1,106 @@
 import 'dart:io';
 
+import 'package:encontrapet/service/user_service.dart';
 import 'package:encontrapet/view/theme/app_colors.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 import '../../model/pet_model.dart';
 
-class PetDetailsScreen extends StatelessWidget {
+class PetDetailsScreen extends StatefulWidget {
   final PetModel pet;
+  final String? heroTag;
 
-  const PetDetailsScreen({super.key, required this.pet});
+  const PetDetailsScreen({super.key, required this.pet, this.heroTag});
+
+  @override
+  State<PetDetailsScreen> createState() => _PetDetailsScreenState();
+}
+
+class _PetDetailsScreenState extends State<PetDetailsScreen> {
+  String? _ownerPhone;
+  bool _isLoadingPhone = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadOwnerPhone();
+  }
+
+  Future<void> _loadOwnerPhone() async {
+    if (widget.pet.userId == null) {
+      if (mounted) setState(() => _isLoadingPhone = false);
+      return;
+    }
+    final phone = await UserService().getOwnerPhone(widget.pet.userId!);
+    if (mounted) {
+      setState(() {
+        _ownerPhone = phone;
+        _isLoadingPhone = false;
+      });
+    }
+  }
+
+  /// Sanitiza o número, remove formatação e adiciona DDI +55 se necessário.
+  String _sanitizePhone(String phone) {
+    // Remove todos os caracteres não numéricos
+    String digits = phone.replaceAll(RegExp(r'[^\d+]'), '');
+    // Se o número já começa com '+', mantém como está
+    if (digits.startsWith('+')) return digits;
+    // Se começa com '55' e tem mais de 11 dígitos, assume que já tem DDI
+    if (digits.startsWith('55') && digits.length >= 12) return '+$digits';
+    // Caso contrário, adiciona o DDI do Brasil
+    return '+55$digits';
+  }
+
+  Future<void> _launchWhatsApp() async {
+    if (_ownerPhone == null || _ownerPhone!.isEmpty) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Contato do anunciante não disponível.'),
+            backgroundColor: Colors.redAccent,
+          ),
+        );
+      }
+      return;
+    }
+
+    final sanitizedPhone = _sanitizePhone(_ownerPhone!);
+    final message = Uri.encodeComponent(
+      'Olá! Vi o anúncio do pet *${widget.pet.name}* no EncontraPet e gostaria de obter mais informações.',
+    );
+    final waUrl = Uri.parse('https://wa.me/$sanitizedPhone?text=$message');
+
+    try {
+      final launched = await launchUrl(
+        waUrl,
+        mode: LaunchMode.externalApplication,
+      );
+      if (!launched && mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Não foi possível abrir o WhatsApp.'),
+            backgroundColor: Colors.redAccent,
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Não foi possível abrir o WhatsApp.'),
+            backgroundColor: Colors.redAccent,
+          ),
+        );
+      }
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
-    final isNetworkImage = pet.imageUrl.startsWith('http');
+    final isNetworkImage = widget.pet.imageUrl.startsWith('http');
 
     return Scaffold(
       backgroundColor: AppColors.background,
@@ -39,11 +126,11 @@ class PetDetailsScreen extends StatelessWidget {
                               top: Radius.circular(20),
                             ),
                             child: Hero(
-                              tag: 'pet_image_${pet.id}_list',
+                              tag: widget.heroTag ?? 'pet_image_${widget.pet.id ?? widget.pet.hashCode}',
                               child: isNetworkImage
-                                  ? Image.network(pet.imageUrl, fit: BoxFit.cover, height: 350, width: double.infinity)
+                                  ? Image.network(widget.pet.imageUrl, fit: BoxFit.cover, height: 350, width: double.infinity)
                                   : Image.file(
-                                      File(pet.imageUrl),
+                                      File(widget.pet.imageUrl),
                                       fit: BoxFit.cover,
                                       height: 350,
                                       width: double.infinity,
@@ -109,7 +196,7 @@ class PetDetailsScreen extends StatelessWidget {
                         children: [
                           // Name
                           Text(
-                            pet.name,
+                            widget.pet.name,
                             style: GoogleFonts.roboto(
                               fontSize: 28,
                               fontWeight: FontWeight.bold,
@@ -118,7 +205,7 @@ class PetDetailsScreen extends StatelessWidget {
                           ),
                           const SizedBox(height: 4),
                           Text(
-                            pet.breed,
+                            widget.pet.breed,
                             style: GoogleFonts.roboto(
                               fontSize: 16,
                               color: Colors.grey[600],
@@ -129,14 +216,14 @@ class PetDetailsScreen extends StatelessWidget {
                           // Location
                           _buildInfoRow(
                             Icons.location_on_outlined,
-                            pet.location,
+                            widget.pet.location,
                           ),
                           const SizedBox(height: 10),
 
                           // Date
                           _buildInfoRow(
                             Icons.calendar_month_outlined,
-                            pet.date,
+                            widget.pet.date,
                           ),
 
                           const SizedBox(height: 24),
@@ -182,8 +269,17 @@ class PetDetailsScreen extends StatelessWidget {
                 width: double.infinity,
                 height: 56,
                 child: ElevatedButton.icon(
-                  onPressed: () {},
-                  icon: const Icon(Icons.phone_outlined, size: 20),
+                  onPressed: _isLoadingPhone ? null : _launchWhatsApp,
+                  icon: _isLoadingPhone
+                      ? const SizedBox(
+                          width: 20,
+                          height: 20,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2.5,
+                            color: Colors.white,
+                          ),
+                        )
+                      : const Icon(Icons.chat_rounded, size: 22),
                   label: Text(
                     'Entrar em contato',
                     style: GoogleFonts.roboto(
@@ -192,7 +288,9 @@ class PetDetailsScreen extends StatelessWidget {
                     ),
                   ),
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColors.primary,
+                    backgroundColor: _isLoadingPhone
+                        ? AppColors.primary.withValues(alpha: 0.6)
+                        : AppColors.primary,
                     foregroundColor: Colors.white,
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(28),

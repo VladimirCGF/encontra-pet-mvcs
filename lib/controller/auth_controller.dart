@@ -142,9 +142,29 @@ class AuthController extends ChangeNotifier {
   }
 
   Future<void> logout() async {
-    await _authApi.signOut();
-    _currentUser = null;
+    _isLoading = true;
     notifyListeners();
+
+    try {
+      // 1. Limpa o Supabase (Sessão remota) E o SQLite (Cache local do usuário)
+      await _userService.logout();
+
+      // 2. Limpa a flag "Manter conectado" do SharedPreferences
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.remove('keep_logged_in'); // Ou .setBool('keep_logged_in', false);
+
+      // 3. Limpa o estado da memória do Controller
+      _currentUser = null;
+      _errorMessage = null;
+
+      debugPrint('Sucesso: Logout completo realizado.');
+    } catch (e) {
+      _errorMessage = 'Erro ao realizar logout: $e';
+      debugPrint('Erro no AuthController.logout: $e');
+    } finally {
+      _isLoading = false;
+      notifyListeners();
+    }
   }
 
   /// Atualiza o perfil (nome e telefone) do usuário atual em modo Offline-First

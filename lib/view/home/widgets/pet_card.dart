@@ -41,7 +41,7 @@ class PetCard extends StatelessWidget {
                   top: Radius.circular(20),
                 ),
                 child: Hero(
-                  tag: 'pet_image_${pet.id ?? pet.hashCode}',
+                  tag: 'pet_image_home_${pet.id ?? pet.hashCode}',
                   child: isNetworkImage
                       ? Image.network(pet.imageUrl, fit: BoxFit.cover, height: 200, width: double.infinity, cacheWidth: 600)
                       : Image.file(
@@ -181,7 +181,9 @@ class PetCard extends StatelessWidget {
                       Navigator.push(
                         context,
                         MaterialPageRoute(
-                          builder: (_) => PetDetailsScreen(pet: pet,
+                          builder: (_) => PetDetailsScreen(
+                            pet: pet,
+                            heroTag: 'pet_image_home_${pet.id ?? pet.hashCode}',
                           ),
                         ),
                       );

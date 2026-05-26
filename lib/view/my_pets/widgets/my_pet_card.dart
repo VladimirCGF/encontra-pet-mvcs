@@ -107,7 +107,7 @@ class MyPetCard extends StatelessWidget {
             child: ClipRRect(
               borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
               child: Hero(
-                tag: 'pet_image_${pet.id ?? pet.hashCode}',
+                tag: 'pet_image_my_pets_${pet.id ?? pet.hashCode}',
                 child: isNetworkImage
                     ? Image.network(pet.imageUrl, fit: BoxFit.cover, height: 180, width: double.infinity, cacheWidth: 600)
                     : Image.file(

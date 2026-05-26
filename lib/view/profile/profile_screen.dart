@@ -3,7 +3,9 @@ import 'package:encontrapet/view/theme/app_colors.dart';
 import 'package:encontrapet/view/auth/login_page.dart';
 import 'package:encontrapet/view/profile/edit_profile_screen.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:provider/provider.dart';
 
+import '../../controller/auth_controller.dart';
 import 'widgets/profile_header.dart';
 import 'widgets/profile_menu_item.dart';
 import 'widgets/logout_button.dart';
@@ -79,7 +81,17 @@ class ProfileScreen extends StatelessWidget {
               const SizedBox(height: 20),
               // Logout Option Button
               LogoutButton(
-                onTap: () {
+                onTap: () async {
+
+                  // 1. Mostra um indicador de carregamento visual (opcional)
+                  _showLoadingDialog(context);
+
+                  // 2. Dispara a função tripla de logout no AuthController
+                  await context.read<AuthController>().logout();
+
+                  // 3. Fecha o indicador de carregamento
+                  if (context.mounted) Navigator.of(context).pop();
+
                   // Voltar para a página de Login reiniciando a stack
                   Navigator.pushAndRemoveUntil(
                     context,
@@ -93,8 +105,16 @@ class ProfileScreen extends StatelessWidget {
           ),
         ),
       ),
-
-
     );
   }
+}
+// Função auxiliar para mostrar um dialog de carregamento enquanto limpa os caches
+void _showLoadingDialog(BuildContext context) {
+  showDialog(
+    context: context,
+    barrierDismissible: false, // Usuário não pode cancelar clicando fora
+    builder: (context) => const Center(
+      child: CircularProgressIndicator(),
+    ),
+  );
 }
